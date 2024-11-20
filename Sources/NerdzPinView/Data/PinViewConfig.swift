@@ -8,21 +8,21 @@
 import UIKit
 
 public struct PinViewConfig {
-    var pinLength: Int
-    var placeholderCharacter: Character?
+    public var pinLength: Int
+    public var placeholderCharacter: Character?
     
-    var secureTextDelay: TimeInterval
-    var secureTextCharacter: Character
+    public var secureTextDelay: TimeInterval
+    public var secureTextCharacter: Character
     
     // If content is centered - stack view would take located in center of the view / otherwise would be stretched
-    let isContentCentered: Bool
-    var containerSpacing: CGFloat
+    public var isContentCentered: Bool
+    public var containerSpacing: CGFloat
     
-    var shouldMoveToPreviousOnDelete: Bool
-    var shouldResignFirstResponderOnEnd: Bool
-    var shouldResignFirstResponderOnReturn: Bool
+    public var shouldMoveToPreviousOnDelete: Bool
+    public var shouldResignFirstResponderOnEnd: Bool
+    public var shouldResignFirstResponderOnReturn: Bool
     
-    init(
+    public init(
         pinLength: Int = 5,
         placeholderCharacter: Character? = nil,
         secureTextCharacter: Character = "*",

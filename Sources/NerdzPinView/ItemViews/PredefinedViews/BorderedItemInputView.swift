@@ -15,15 +15,15 @@ public final class BorderedItemInputView: PinTapableView, PinCodeItemViewType, P
     public struct LayoutConfig: DefaultableConfigType {
         public static let defaultValue: BorderedItemInputView.LayoutConfig = LayoutConfig()
         
-        var cursorCornerRadius: CGFloat
-        var cursorHeightMultiplier: CGFloat
-        var cursorWidth: CGFloat
+        public var cursorCornerRadius: CGFloat
+        public var cursorHeightMultiplier: CGFloat
+        public var cursorWidth: CGFloat
         
-        var cornerRadius: CGFloat
+        public var cornerRadius: CGFloat
         
-        var contentLabelEdgeInsets: UIEdgeInsets
+        public var contentLabelEdgeInsets: UIEdgeInsets
         
-        init(
+        public init(
             cursorCornerRadius: CGFloat = 0.5,
             cursorHeightMultiplier: CGFloat = 0.7,
             cursorWidth: CGFloat = 1,
@@ -43,30 +43,30 @@ public final class BorderedItemInputView: PinTapableView, PinCodeItemViewType, P
         
         public static let defaultValue: AppearanceConfig = AppearanceConfig()
         
-        var defaultBackgroundColor: UIColor
+        public var defaultBackgroundColor: UIColor
         // If state value valiables are nil -
-        var activeBackgroundColor: UIColor?
-        var errorBackgroundColor: UIColor?
+        public var activeBackgroundColor: UIColor?
+        public var errorBackgroundColor: UIColor?
         
-        var defaultValueColor: UIColor
-        var activeValueColor: UIColor?
-        var errorValueColor: UIColor?
+        public var defaultValueColor: UIColor
+        public var activeValueColor: UIColor?
+        public var errorValueColor: UIColor?
                 
-        var defaultBorderColor: UIColor
-        var activeBorderColor: UIColor?
-        var errorBorderColor: UIColor?
+        public var defaultBorderColor: UIColor
+        public var activeBorderColor: UIColor?
+        public var errorBorderColor: UIColor?
         
-        var defaultBorderWidth: CGFloat
-        var activeBorderWidth: CGFloat?
-        var errorBorderWidth: CGFloat?
+        public var defaultBorderWidth: CGFloat
+        public var activeBorderWidth: CGFloat?
+        public var errorBorderWidth: CGFloat?
         
-        var placeholderColor: UIColor
-        var cursorColor: UIColor
-        var font: UIFont
+        public var placeholderColor: UIColor
+        public var cursorColor: UIColor
+        public var font: UIFont
         
         // MARK: - Life cycle
         
-        init(
+        public init(
             defaultBackgroundColor: UIColor = .white,
             activeBackgroundColor: UIColor? = nil,
             errorBackgroundColor: UIColor? = nil,
