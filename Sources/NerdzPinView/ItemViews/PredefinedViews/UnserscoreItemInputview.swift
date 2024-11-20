@@ -7,21 +7,21 @@
 
 import UIKit
 
-final class UnderscoreItemInputView: PinTapableView, PinCodeItemViewType, PinCodeItemLayoutConfigurable, PinCodeItemAppearanceConfigurable {
+public final class UnderscoreItemInputView: PinTapableView, PinCodeItemViewType, PinCodeItemLayoutConfigurable, PinCodeItemAppearanceConfigurable {
     
     // MARK: - Internal types
     
-    struct LayoutConfig: DefaultableConfigType {
-        static var defaultValue: LayoutConfig = LayoutConfig()
+    public struct LayoutConfig: DefaultableConfigType {
+        public static var defaultValue: LayoutConfig = LayoutConfig()
         
-        var cursorCornerRadius: CGFloat
-        var cursorHeightMultiplier: CGFloat
-        var cursorWidth: CGFloat
+        public var cursorCornerRadius: CGFloat
+        public var cursorHeightMultiplier: CGFloat
+        public var cursorWidth: CGFloat
         
-        var cornerRadius: CGFloat
-        var contentLabelEdgeInsets: UIEdgeInsets
+        public var cornerRadius: CGFloat
+        public var contentLabelEdgeInsets: UIEdgeInsets
         
-        init(
+        public init(
             cursorCornerRadius: CGFloat = 0.5,
             cursorHeightMultiplier: CGFloat = 0.7,
             cursorWidth: CGFloat = 1,
@@ -38,34 +38,34 @@ final class UnderscoreItemInputView: PinTapableView, PinCodeItemViewType, PinCod
     }
     
     // Implementation has a major flaw with duplicated properties
-    struct AppearanceConfig: DefaultableConfigType {
+    public struct AppearanceConfig: DefaultableConfigType {
         
-        static let defaultValue: AppearanceConfig = AppearanceConfig()
+        public static let defaultValue: AppearanceConfig = AppearanceConfig()
         
-        var defaultBackgroundColor: UIColor
+        public var defaultBackgroundColor: UIColor
         // If state value valiables are nil -
-        var activeBackgroundColor: UIColor?
-        var errorBackgroundColor: UIColor?
+        public var activeBackgroundColor: UIColor?
+        public var errorBackgroundColor: UIColor?
         
-        var defaultValueColor: UIColor
-        var activeValueColor: UIColor?
-        var errorValueColor: UIColor?
+        public var defaultValueColor: UIColor
+        public var activeValueColor: UIColor?
+        public var errorValueColor: UIColor?
         
-        var defaultUnderlineColor: UIColor
-        var activeUnderlineColor: UIColor?
-        var errorUnderlineColor: UIColor?
+        public var defaultUnderlineColor: UIColor
+        public var activeUnderlineColor: UIColor?
+        public var errorUnderlineColor: UIColor?
         
-        var defaultUnderlineHeight: CGFloat
-        var activeUnderlineHeight: CGFloat?
-        var errorUnderlineHeight: CGFloat?
+        public var defaultUnderlineHeight: CGFloat
+        public var activeUnderlineHeight: CGFloat?
+        public var errorUnderlineHeight: CGFloat?
         
-        var placeholderColor: UIColor
-        var cursorColor: UIColor
-        var font: UIFont
+        public var placeholderColor: UIColor
+        public var cursorColor: UIColor
+        public var font: UIFont
         
         // MARK: - Life cycle
         
-        init(
+        public init(
             defaultBackgroundColor: UIColor = .clear,
             activeBackgroundColor: UIColor? = nil,
             errorBackgroundColor: UIColor? = nil,
@@ -233,7 +233,7 @@ final class UnderscoreItemInputView: PinTapableView, PinCodeItemViewType, PinCod
     
     // MARK: - Life cycle
     
-    override init(frame: CGRect) {
+    public override init(frame: CGRect) {
         super.init(frame: frame)
         
         configureView()
@@ -243,7 +243,7 @@ final class UnderscoreItemInputView: PinTapableView, PinCodeItemViewType, PinCod
         updateViewStateDependentAppearance()
     }
     
-    required init?(coder: NSCoder) {
+    public required init?(coder: NSCoder) {
         super.init(coder: coder)
         
         configureView()
