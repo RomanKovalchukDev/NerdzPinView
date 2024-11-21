@@ -22,6 +22,8 @@ public final class PinCodeInputView<T: UIView & PinCodeItemViewType & PinCodeIte
     
     public var onPinViewEnteredFully: PinCodeTextAction?
     public var onPinValueChanged: PinCodeTextAction?
+    public var onBecomeFirstResponder: PinCodeEmptyAction?
+    public var onResignFirstResponder: PinCodeEmptyAction?
     
     public var text: String {
         charactersArray
@@ -229,17 +231,20 @@ public final class PinCodeInputView<T: UIView & PinCodeItemViewType & PinCodeIte
         if viewState == .error {
             viewState = .normal
         }
-        
+                
         updateSubviewStates()
+        
+        onBecomeFirstResponder?()
         
         return super.becomeFirstResponder()
     }
     
     @discardableResult
     public override func resignFirstResponder() -> Bool {
-        
         activeItemIndex = nil
         updateSubviewStates()
+        
+        onResignFirstResponder?()
         
         return super.resignFirstResponder()
     }
