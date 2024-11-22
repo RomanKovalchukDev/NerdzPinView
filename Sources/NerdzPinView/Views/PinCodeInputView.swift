@@ -295,7 +295,6 @@ public final class PinCodeInputView<T: UIView & PinCodeItemViewType & PinCodeIte
     
     private func initialViewLayout() {
         containerStackView.constraints.deActivate()
-        containerStackView.spacing = config.containerSpacing
         
         addSubview(containerStackView)
         containerStackView.topToSuperview()
@@ -305,7 +304,12 @@ public final class PinCodeInputView<T: UIView & PinCodeItemViewType & PinCodeIte
         containerStackView.rightToSuperview(relation: config.isContentCentered ? .equalOrLess : .equal)
         
         if config.isContentCentered {
+            containerStackView.distribution = .fill
+            containerStackView.spacing = config.containerSpacing
             containerStackView.centerXToSuperview()
+        }
+        else {
+            containerStackView.distribution = .equalSpacing
         }
     }
     
