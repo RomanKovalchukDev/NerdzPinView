@@ -3,7 +3,7 @@
 NerdzPinView is a highly customisable library used for entering pin and one time codes.
 
 [![Swift 5.9](https://img.shields.io/badge/Swift-5.1-orange.svg?style=flat)](https://developer.apple.com/swift/)
-[![SPM Compatible]([https://img.shields.io/badge/Swift%20Package%20Manager](https://img.shields.io/badge/Swift%20Package%20Manager-8A2BE2))](https://www.swift.org/documentation/package-manager/)
+[![SPM Compatible]([https://img.shields.io/badge/Swift%20Package%20Manager-8A2BE2](https://img.shields.io/badge/Swift%20Package%20Manager-8A2BE2))](https://www.swift.org/documentation/package-manager/)
 [![Platforms iOS](https://img.shields.io/badge/Platforms-iOS-lightgray.svg?style=flat)](http://www.apple.com/ios/)
 [![License MIT](https://img.shields.io/badge/License-MIT-lightgrey.svg?style=flat)](https://opensource.org/licenses/MIT)
 
