@@ -30,3 +30,4 @@ public class PinTapableView: UIView {
         onViewTapped?()
     }
 }
+https://github.com/RomanKovalchukDev/NerdzPinView/tree/main/Samples/NerdzPinSwiftUISample
