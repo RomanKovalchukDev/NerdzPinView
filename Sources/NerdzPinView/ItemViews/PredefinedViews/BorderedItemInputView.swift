@@ -6,7 +6,6 @@
 //
 
 import UIKit
-import TinyConstraints
 
 public final class BorderedItemInputView: PinTapableView, PinCodeItemViewType, PinCodeItemLayoutConfigurable, PinCodeItemAppearanceConfigurable {
     
@@ -330,26 +329,42 @@ public final class BorderedItemInputView: PinTapableView, PinCodeItemViewType, P
     
     // Method that resets all constratints that were added in the configure view method
     private func resetConstants() {
-        cursorView.constraints.deActivate()
-        contentLabel.constraints.deActivate()
-        placeholderLabel.constraints.deActivate()
+        NSLayoutConstraint.deactivate(cursorView.constraints)
+        NSLayoutConstraint.deactivate(contentLabel.constraints)
+        NSLayoutConstraint.deactivate(placeholderLabel.constraints)
     }
     
     // Main view configuration function, configuring whole view corner radius, layout etc
     private func configureView() {
         layer.cornerRadius = layoutConfig.cornerRadius
         cursorView.layer.cornerRadius = layoutConfig.cursorCornerRadius
-
+        
         addSubview(cursorView)
-
-        cursorView.width(layoutConfig.cursorWidth)
-        cursorView.heightToSuperview(multiplier: layoutConfig.cursorHeightMultiplier)
-        cursorView.centerInSuperview()
+        cursorView.translatesAutoresizingMaskIntoConstraints = false
+        
+        NSLayoutConstraint.activate([
+            cursorView.widthAnchor.constraint(equalToConstant: layoutConfig.cursorWidth),
+            cursorView.heightAnchor.constraint(equalTo: heightAnchor, multiplier: layoutConfig.cursorHeightMultiplier),
+            cursorView.centerXAnchor.constraint(equalTo: centerXAnchor),
+            cursorView.centerYAnchor.constraint(equalTo: centerYAnchor)
+        ])
         
         addSubview(contentLabel)
-        contentLabel.edgesToSuperview(insets: layoutConfig.contentLabelEdgeInsets)
+        contentLabel.translatesAutoresizingMaskIntoConstraints = false
+        NSLayoutConstraint.activate([
+            contentLabel.topAnchor.constraint(equalTo: topAnchor, constant: layoutConfig.contentLabelEdgeInsets.top),
+            contentLabel.bottomAnchor.constraint(equalTo: bottomAnchor, constant: -layoutConfig.contentLabelEdgeInsets.bottom),
+            contentLabel.leadingAnchor.constraint(equalTo: leadingAnchor, constant: layoutConfig.contentLabelEdgeInsets.left),
+            contentLabel.trailingAnchor.constraint(equalTo: trailingAnchor, constant: -layoutConfig.contentLabelEdgeInsets.right)
+        ])
         
         addSubview(placeholderLabel)
-        placeholderLabel.edges(to: contentLabel)
+        placeholderLabel.translatesAutoresizingMaskIntoConstraints = false
+        NSLayoutConstraint.activate([
+            placeholderLabel.topAnchor.constraint(equalTo: contentLabel.topAnchor),
+            placeholderLabel.bottomAnchor.constraint(equalTo: contentLabel.bottomAnchor),
+            placeholderLabel.leadingAnchor.constraint(equalTo: contentLabel.leadingAnchor),
+            placeholderLabel.trailingAnchor.constraint(equalTo: contentLabel.trailingAnchor)
+        ])
     }
 }

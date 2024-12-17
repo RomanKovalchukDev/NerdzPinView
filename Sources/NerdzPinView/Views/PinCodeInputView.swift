@@ -8,7 +8,7 @@
 import UIKit
 
 @MainActor
-public final class PinCodeInputView<T: UIView & PinCodeItemViewType & PinCodeItemLayoutConfigurable & PinCodeItemAppearanceConfigurable>: UIView, UIKeyInput, @preconcurrency UIEditMenuInteractionDelegate {
+open class PinCodeInputView<T: UIView & PinCodeItemViewType & PinCodeItemLayoutConfigurable & PinCodeItemAppearanceConfigurable>: UIView, UIKeyInput, @preconcurrency UIEditMenuInteractionDelegate {
     
     // MARK: - Internal types
     
@@ -20,8 +20,8 @@ public final class PinCodeInputView<T: UIView & PinCodeItemViewType & PinCodeIte
     
     // MARK: - Properties(public)
     
-    public var onPinViewEnteredFully: PinCodeTextAction?
     public var onPinValueChanged: PinCodeTextAction?
+    public var onPinViewEnteredFully: PinCodeTextAction?
     public var onBecomeFirstResponder: PinCodeEmptyAction?
     public var onResignFirstResponder: PinCodeEmptyAction?
     
@@ -32,70 +32,74 @@ public final class PinCodeInputView<T: UIView & PinCodeItemViewType & PinCodeIte
             .joined()
     }
     
-    public var config: PinViewConfig = PinViewConfig() {
+    open var config: PinViewConfig = PinViewConfig() {
         didSet {
             configureView()
         }
     }
     
-    public var viewState: ViewState = .normal {
+    open var viewState: ViewState = .normal {
         didSet {
             updateSubviewStates()
         }
     }
     
-    public var layoutConfig: T.LayoutConfig = T.LayoutConfig.defaultValue {
+    open var layoutConfig: T.LayoutConfig = T.LayoutConfig.defaultValue {
         didSet {
             itemViews.forEach({ $0.layoutConfig = layoutConfig })
         }
     }
     
-    public var appearanceConfig: T.AppearanceConfig = T.AppearanceConfig.defaultValue {
+    open var appearanceConfig: T.AppearanceConfig = T.AppearanceConfig.defaultValue {
         didSet {
             itemViews.forEach({ $0.appearanceConfig = appearanceConfig })
         }
     }
     
-    public override var canBecomeFirstResponder: Bool {
+    open override var canBecomeFirstResponder: Bool {
         viewState != .disabled
     }
     
-    public var pasteActionTitle: String = "Paste"
+    open var pasteActionTitle: String = "Paste"
     
     // MARK: - UIKeyInput
     
-    public var hasText: Bool {
+    open var hasText: Bool {
         !text.isEmpty
     }
     
-    public var autocapitalizationType: UITextAutocapitalizationType = .none
-    public var autocorrectionType: UITextAutocorrectionType = .no
-    public var spellCheckingType: UITextSpellCheckingType = .no
-    public var smartQuotesType: UITextSmartQuotesType = .no
-    public var smartDashesType: UITextSmartDashesType = .no
-    public var smartInsertDeleteType: UITextSmartInsertDeleteType = .no
-    public var keyboardType: UIKeyboardType = .numberPad
-    public var keyboardAppearance: UIKeyboardAppearance = .default
-    public var returnKeyType: UIReturnKeyType = .done
-    public var enablesReturnKeyAutomatically: Bool = true
-    public var isSecureTextEntry: Bool = false
-    public var textContentType: UITextContentType! = .oneTimeCode
+    open var autocapitalizationType: UITextAutocapitalizationType = .none
+    open var autocorrectionType: UITextAutocorrectionType = .no
+    open var spellCheckingType: UITextSpellCheckingType = .no
+    open var smartQuotesType: UITextSmartQuotesType = .no
+    open var smartDashesType: UITextSmartDashesType = .no
+    open var smartInsertDeleteType: UITextSmartInsertDeleteType = .no
+    open var keyboardType: UIKeyboardType = .numberPad
+    open var keyboardAppearance: UIKeyboardAppearance = .default
+    open var returnKeyType: UIReturnKeyType = .done
+    open var enablesReturnKeyAutomatically: Bool = true
+    open var isSecureTextEntry: Bool = false
+    open var textContentType: UITextContentType! = .oneTimeCode
     
     // MARK: - Properties(private)
     
-    private var activeItemIndex: Int?
-        
+    private var activeItemIndex: Int? {
+        didSet {
+            debugPrint(activeItemIndex)
+        }
+    }
+    
     private var charactersArray: [Character?] = []
+    
+    private var itemViews: [T] {
+        containerStackView.arrangedSubviews.compactMap({ $0 as? T })
+    }
     
     private lazy var containerStackView: UIStackView = {
         let view = UIStackView()
         return view
     }()
     
-    private var itemViews: [T] {
-        containerStackView.arrangedSubviews.compactMap({ $0 as? T })
-    }
-            
     private lazy var editMenuInteraction: UIEditMenuInteraction = {
         let interaction = UIEditMenuInteraction(delegate: self)
         return interaction
@@ -132,16 +136,16 @@ public final class PinCodeInputView<T: UIView & PinCodeItemViewType & PinCodeIte
     
     // MARK: - Methods(public)
     
-    public override func canPerformAction(_ action: Selector, withSender sender: Any?) -> Bool {
+    open override func canPerformAction(_ action: Selector, withSender sender: Any?) -> Bool {
         if action == #selector(paste(_:)) {
-            return  UIPasteboard.general.hasStrings
+            return UIPasteboard.general.hasStrings
         }
         else {
             return super.canPerformAction(action, withSender: sender)
         }
     }
     
-    public override func paste(_ sender: Any?) {
+    open override func paste(_ sender: Any?) {
         if let string = UIPasteboard.general.string {
             let pin: [Character] = Array(string)
             
@@ -162,7 +166,7 @@ public final class PinCodeInputView<T: UIView & PinCodeItemViewType & PinCodeIte
     
     // MARK: - UIKeyInput
     
-    public func insertText(_ text: String) {
+    open func insertText(_ text: String) {
         if text == "\n" {
             // Return key pressed
             if config.shouldResignFirstResponderOnReturn {
@@ -198,7 +202,7 @@ public final class PinCodeInputView<T: UIView & PinCodeItemViewType & PinCodeIte
         updateSubviewStates()
     }
     
-    public func deleteBackward() {
+    open func deleteBackward() {
         if let activeItemIndex {
             let oldValue = charactersArray[activeItemIndex]
             
@@ -221,7 +225,9 @@ public final class PinCodeInputView<T: UIView & PinCodeItemViewType & PinCodeIte
     // MARK: - UIResponder
     
     @discardableResult
-    public override func becomeFirstResponder() -> Bool {
+    open override func becomeFirstResponder() -> Bool {
+        debugPrint("Inner become first responder", "***")
+
         // If become first responder was called without taping on specific item - select first one
         if activeItemIndex == nil {
             activeItemIndex = .zero
@@ -240,7 +246,9 @@ public final class PinCodeInputView<T: UIView & PinCodeItemViewType & PinCodeIte
     }
     
     @discardableResult
-    public override func resignFirstResponder() -> Bool {
+    open override func resignFirstResponder() -> Bool {
+        debugPrint("Inner resign first responder", "***")
+
         activeItemIndex = nil
         updateSubviewStates()
         
@@ -251,7 +259,7 @@ public final class PinCodeInputView<T: UIView & PinCodeItemViewType & PinCodeIte
         
     // MARK: - UIEditMenuInteractionDelegate
     
-    public func editMenuInteraction(
+    open func editMenuInteraction(
         _ interaction: UIEditMenuInteraction,
         menuFor configuration: UIEditMenuConfiguration,
         suggestedActions: [UIMenuElement]
@@ -267,7 +275,7 @@ public final class PinCodeInputView<T: UIView & PinCodeItemViewType & PinCodeIte
         return UIMenu(title: "", children: [pasteAction])
     }
     
-    public func setText(_ text: String?) {
+    open func setText(_ text: String?) {
         let pin: [Character] = Array(text ?? "")
         
         for index in (0..<config.pinLength) {
@@ -286,30 +294,44 @@ public final class PinCodeInputView<T: UIView & PinCodeItemViewType & PinCodeIte
     
     private func configureView() {
         initialViewLayout()
-        
         configureSubviews()
-        
         containerStackView.addInteraction(editMenuInteraction)
         containerStackView.addGestureRecognizer(longPressGestureRecognizer)
     }
     
     private func initialViewLayout() {
-        containerStackView.constraints.deActivate()
-        
+        // Disable autoresizing mask translation for Auto Layout
+        containerStackView.translatesAutoresizingMaskIntoConstraints = false
+
+        // Remove any existing constraints on containerStackView
+        NSLayoutConstraint.deactivate(containerStackView.constraints)
+
         addSubview(containerStackView)
-        containerStackView.topToSuperview()
-        containerStackView.bottomToSuperview()
         
-        containerStackView.leftToSuperview(relation: config.isContentCentered ? .equalOrGreater : .equal)
-        containerStackView.rightToSuperview(relation: config.isContentCentered ? .equalOrLess : .equal)
+        // Pin containerStackView top and bottom to the view’s edges
+        NSLayoutConstraint.activate([
+            containerStackView.topAnchor.constraint(equalTo: topAnchor),
+            containerStackView.bottomAnchor.constraint(equalTo: bottomAnchor)
+        ])
         
         if config.isContentCentered {
             containerStackView.distribution = .fill
             containerStackView.spacing = config.containerSpacing
-            containerStackView.centerXToSuperview()
-        }
-        else {
+            
+            // Center horizontally and allow flexible left/right constraints
+            NSLayoutConstraint.activate([
+                containerStackView.centerXAnchor.constraint(equalTo: centerXAnchor),
+                containerStackView.leftAnchor.constraint(greaterThanOrEqualTo: leftAnchor),
+                containerStackView.rightAnchor.constraint(lessThanOrEqualTo: rightAnchor)
+            ])
+        } else {
             containerStackView.distribution = .equalSpacing
+            
+            // Pin left and right to the view’s edges
+            NSLayoutConstraint.activate([
+                containerStackView.leftAnchor.constraint(equalTo: leftAnchor),
+                containerStackView.rightAnchor.constraint(equalTo: rightAnchor)
+            ])
         }
     }
     
@@ -320,11 +342,18 @@ public final class PinCodeInputView<T: UIView & PinCodeItemViewType & PinCodeIte
             let view = T()
                         
             view.onViewTapped = { [weak self] in
+                debugPrint("On view tapped")
                 self?.activeItemIndex = index
                 self?.becomeFirstResponder()
             }
             
-            view.aspectRatio(1)
+            view.translatesAutoresizingMaskIntoConstraints = false
+
+            // Add width and height constraints to maintain a 1:1 aspect ratio
+            NSLayoutConstraint.activate([
+                view.heightAnchor.constraint(equalTo: view.widthAnchor)
+            ])
+            
             view.layoutConfig = layoutConfig
             view.appearanceConfig = appearanceConfig
             view.placeholderCharacter = config.placeholderCharacter

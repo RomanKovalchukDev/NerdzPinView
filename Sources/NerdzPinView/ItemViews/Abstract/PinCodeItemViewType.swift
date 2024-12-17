@@ -12,8 +12,8 @@ public protocol PinCodeItemViewType: AnyObject {
     
     var onViewTapped: PinCodeEmptyAction? { get set }
     
-    var valueCharacter: Character? { get }
     var viewState: PinCodeItemViewState { get set }
+    var valueCharacter: Character? { get }
     var placeholderCharacter: Character? { get set }
     var secureTextCharacter: Character? { get set }
     var shouldSecureText: Bool { get set }

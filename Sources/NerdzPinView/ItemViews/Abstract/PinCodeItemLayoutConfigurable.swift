@@ -8,6 +8,5 @@
 @MainActor
 public protocol PinCodeItemLayoutConfigurable: AnyObject {
     associatedtype LayoutConfig: DefaultableConfigType
-            
     var layoutConfig: LayoutConfig { get set }
 }

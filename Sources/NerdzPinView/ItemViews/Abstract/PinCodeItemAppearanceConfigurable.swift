@@ -8,6 +8,5 @@
 @MainActor
 public protocol PinCodeItemAppearanceConfigurable: AnyObject {
     associatedtype AppearanceConfig: DefaultableConfigType
-        
     var appearanceConfig: AppearanceConfig { get set }
 }

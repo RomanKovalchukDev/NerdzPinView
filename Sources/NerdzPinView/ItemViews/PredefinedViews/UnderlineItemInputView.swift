@@ -7,7 +7,7 @@
 
 import UIKit
 
-public final class UnderscoreItemInputView: PinTapableView, PinCodeItemViewType, PinCodeItemLayoutConfigurable, PinCodeItemAppearanceConfigurable {
+public final class UnderlineItemInputView: PinTapableView, PinCodeItemViewType, PinCodeItemLayoutConfigurable, PinCodeItemAppearanceConfigurable {
     
     // MARK: - Internal types
     
@@ -336,11 +336,11 @@ public final class UnderscoreItemInputView: PinTapableView, PinCodeItemViewType,
     
     // Method that resets all constratints that were added in the configure view method
     private func resetConstants() {
-        cursorView.constraints.deActivate()
-        contentLabel.constraints.deActivate()
-        underlineView.constraints.deActivate()
-        placeholderLabel.constraints.deActivate()
-        
+        NSLayoutConstraint.deactivate(cursorView.constraints)
+        NSLayoutConstraint.deactivate(contentLabel.constraints)
+        NSLayoutConstraint.deactivate(underlineView.constraints)
+        NSLayoutConstraint.deactivate(placeholderLabel.constraints)
+
         underlineViewHeightConstraint = nil
     }
     
@@ -351,24 +351,39 @@ public final class UnderscoreItemInputView: PinTapableView, PinCodeItemViewType,
         cursorView.layer.cornerRadius = layoutConfig.cursorCornerRadius
         
         addSubview(cursorView)
-        
-        cursorView.width(layoutConfig.cursorWidth)
-        cursorView.heightToSuperview(multiplier: layoutConfig.cursorHeightMultiplier)
-        cursorView.centerInSuperview()
+        cursorView.translatesAutoresizingMaskIntoConstraints = false
+        NSLayoutConstraint.activate([
+            cursorView.widthAnchor.constraint(equalToConstant: layoutConfig.cursorWidth),
+            cursorView.heightAnchor.constraint(equalTo: heightAnchor, multiplier: layoutConfig.cursorHeightMultiplier),
+            cursorView.centerXAnchor.constraint(equalTo: centerXAnchor),
+            cursorView.centerYAnchor.constraint(equalTo: centerYAnchor)
+        ])
         
         addSubview(underlineView)
-        underlineView.bottomToSuperview()
-        underlineView.leadingToSuperview()
-        underlineView.trailingToSuperview()
-        underlineView.height(appearanceConfig.getUnderlineHeight(for: viewState))
+        underlineView.translatesAutoresizingMaskIntoConstraints = false
+        NSLayoutConstraint.activate([
+            underlineView.bottomAnchor.constraint(equalTo: bottomAnchor),
+            underlineView.leadingAnchor.constraint(equalTo: leadingAnchor),
+            underlineView.trailingAnchor.constraint(equalTo: trailingAnchor),
+            underlineView.heightAnchor.constraint(equalToConstant: appearanceConfig.getUnderlineHeight(for: viewState))
+        ])
         
         addSubview(contentLabel)
-        contentLabel.topToSuperview(offset: layoutConfig.contentLabelEdgeInsets.top)
-        contentLabel.leadingToSuperview(offset: layoutConfig.contentLabelEdgeInsets.left)
-        contentLabel.rightToSuperview(offset: -layoutConfig.contentLabelEdgeInsets.right)
-        contentLabel.bottomToTop(of: underlineView, offset: layoutConfig.contentLabelEdgeInsets.bottom)
+        contentLabel.translatesAutoresizingMaskIntoConstraints = false
+        NSLayoutConstraint.activate([
+            contentLabel.topAnchor.constraint(equalTo: topAnchor, constant: layoutConfig.contentLabelEdgeInsets.top),
+            contentLabel.leadingAnchor.constraint(equalTo: leadingAnchor, constant: layoutConfig.contentLabelEdgeInsets.left),
+            contentLabel.trailingAnchor.constraint(equalTo: trailingAnchor, constant: -layoutConfig.contentLabelEdgeInsets.right),
+            contentLabel.bottomAnchor.constraint(equalTo: underlineView.topAnchor, constant: layoutConfig.contentLabelEdgeInsets.bottom)
+        ])
         
         addSubview(placeholderLabel)
-        placeholderLabel.edges(to: contentLabel)
+        placeholderLabel.translatesAutoresizingMaskIntoConstraints = false
+        NSLayoutConstraint.activate([
+            placeholderLabel.topAnchor.constraint(equalTo: contentLabel.topAnchor),
+            placeholderLabel.bottomAnchor.constraint(equalTo: contentLabel.bottomAnchor),
+            placeholderLabel.leadingAnchor.constraint(equalTo: contentLabel.leadingAnchor),
+            placeholderLabel.trailingAnchor.constraint(equalTo: contentLabel.trailingAnchor)
+        ])
     }
 }
