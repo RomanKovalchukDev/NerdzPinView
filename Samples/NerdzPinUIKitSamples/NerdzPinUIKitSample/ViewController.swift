@@ -53,7 +53,13 @@ final class ViewController: UIViewController {
     // MARK: - IBOutlets
     
     // Example of designable bordered pin view
-    @IBOutlet private var borderedPinCodeView: DesignableBorderedPinInputView!
+    @IBOutlet private var borderedPinCodeView: DesignableBorderedPinInputView! {
+        didSet {
+            borderedPinCodeView.onPinViewEnteredFully = {
+                debugPrint($0, "XD")
+            }
+        }
+    }
     
     // Example of designable underline pin input view
     @IBOutlet private var underlinedPinCodeView: DesignableUnderlinedPinInputView!
@@ -83,4 +89,3 @@ final class ViewController: UIViewController {
         borderedPinCodeView.becomeFirstResponder()
     }
 }
-

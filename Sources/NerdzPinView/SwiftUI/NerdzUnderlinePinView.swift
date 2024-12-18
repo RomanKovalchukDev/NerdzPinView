@@ -31,7 +31,6 @@ public struct NerdzUnderlinePinView: UIViewRepresentable {
     private let config: PinViewConfig
     private let itemsLayutConfig: UnderlineItemInputView.LayoutConfig
     private let itemsAppearanceConfig: UnderlineItemInputView.AppearanceConfig
-    private let pasteActionTitle: String
     
     public init(
         text: Binding<String>,
@@ -52,8 +51,7 @@ public struct NerdzUnderlinePinView: UIViewRepresentable {
         textContentType: UITextContentType! = .oneTimeCode,
         config: PinViewConfig = .init(),
         itemsLayutConfig: UnderlineItemInputView.LayoutConfig = .defaultValue,
-        itemsAppearanceConfig: UnderlineItemInputView.AppearanceConfig = .defaultValue,
-        pasteActionTitle: String = "Paste"
+        itemsAppearanceConfig: UnderlineItemInputView.AppearanceConfig = .defaultValue
     ) {
         self._text = text
         self._viewState = viewState
@@ -74,7 +72,6 @@ public struct NerdzUnderlinePinView: UIViewRepresentable {
         self.config = config
         self.itemsLayutConfig = itemsLayutConfig
         self.itemsAppearanceConfig = itemsAppearanceConfig
-        self.pasteActionTitle = pasteActionTitle
     }
     
     public func makeUIView(context: Context) -> DesignableUnderlinedPinInputView {

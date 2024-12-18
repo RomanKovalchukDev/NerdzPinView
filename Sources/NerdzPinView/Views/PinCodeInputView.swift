@@ -59,9 +59,7 @@ open class PinCodeInputView<T: UIView & PinCodeItemViewType & PinCodeItemLayoutC
     open override var canBecomeFirstResponder: Bool {
         viewState != .disabled
     }
-    
-    open var pasteActionTitle: String = "Paste"
-    
+        
     // MARK: - UIKeyInput
     
     open var hasText: Bool {
@@ -83,12 +81,7 @@ open class PinCodeInputView<T: UIView & PinCodeItemViewType & PinCodeItemLayoutC
     
     // MARK: - Properties(private)
     
-    private var activeItemIndex: Int? {
-        didSet {
-            debugPrint(activeItemIndex)
-        }
-    }
-    
+    private var activeItemIndex: Int?
     private var charactersArray: [Character?] = []
     
     private var itemViews: [T] {
@@ -155,8 +148,22 @@ open class PinCodeInputView<T: UIView & PinCodeItemViewType & PinCodeItemLayoutC
             
             var pasteboardPinIterator: Int = 0
             for index in (activeItemIndex ?? .zero)..<config.pinLength {
+                if pasteboardPinIterator < pin.count {
+                    charactersArray[index] = pin[pasteboardPinIterator]
+                }
+                
                 pasteboardPinIterator += 1
-                charactersArray[index] = pin[pasteboardPinIterator]
+            }
+            
+            activeItemIndex = min(pin.count, config.pinLength - 1)
+            
+            // Handle finish
+            if config.shouldResignFirstResponderOnEnd && pin.count >= config.pinLength {
+                resignFirstResponder()
+            }
+            
+            if self.text.count == config.pinLength {
+                onPinViewEnteredFully?(self.text)
             }
             
             updateSubviewStates()
@@ -174,20 +181,23 @@ open class PinCodeInputView<T: UIView & PinCodeItemViewType & PinCodeItemLayoutC
             }
         }
         else {
-            if let activeItemIndex {
-                charactersArray[activeItemIndex] = text.first
-                itemViews[activeItemIndex].setCharacter(text.first, animated: true)
-
+            if let activeItemIndex, activeItemIndex >= .zero {
+                if activeItemIndex < charactersArray.count {
+                    charactersArray[activeItemIndex] = text.first
+                }
+                
+                if activeItemIndex < itemViews.count {
+                    itemViews[activeItemIndex].setCharacter(text.first, animated: true)
+                }
+                
                 onPinValueChanged?(self.text)
                 
                 let nextItemIndex = activeItemIndex + 1
-                
                 if nextItemIndex < config.pinLength {
                     self.activeItemIndex = nextItemIndex
                 }
                 else {
                     // Handle finish
-                    
                     if config.shouldResignFirstResponderOnEnd {
                         resignFirstResponder()
                     }
@@ -226,8 +236,6 @@ open class PinCodeInputView<T: UIView & PinCodeItemViewType & PinCodeItemLayoutC
     
     @discardableResult
     open override func becomeFirstResponder() -> Bool {
-        debugPrint("Inner become first responder", "***")
-
         // If become first responder was called without taping on specific item - select first one
         if activeItemIndex == nil {
             activeItemIndex = .zero
@@ -247,8 +255,6 @@ open class PinCodeInputView<T: UIView & PinCodeItemViewType & PinCodeItemLayoutC
     
     @discardableResult
     open override func resignFirstResponder() -> Bool {
-        debugPrint("Inner resign first responder", "***")
-
         activeItemIndex = nil
         updateSubviewStates()
         
@@ -268,7 +274,7 @@ open class PinCodeInputView<T: UIView & PinCodeItemViewType & PinCodeItemLayoutC
             return nil
         }
         
-        let pasteAction = UIAction(title: pasteActionTitle) { [weak self] _ in
+        let pasteAction = UIAction(title: config.pasteActionTitle) { [weak self] _ in
             self?.paste(self)
         }
         
@@ -296,6 +302,7 @@ open class PinCodeInputView<T: UIView & PinCodeItemViewType & PinCodeItemLayoutC
         initialViewLayout()
         configureSubviews()
         containerStackView.addInteraction(editMenuInteraction)
+        longPressGestureRecognizer.minimumPressDuration = config.pasteGestureMinDuration
         containerStackView.addGestureRecognizer(longPressGestureRecognizer)
     }
     
@@ -337,12 +344,12 @@ open class PinCodeInputView<T: UIView & PinCodeItemViewType & PinCodeItemLayoutC
     
     private func configureSubviews() {
         containerStackView.arrangedSubviews.forEach({ $0.removeFromSuperview() })
-                
+        charactersArray.removeAll()
+        
         for index in 0..<config.pinLength {
             let view = T()
                         
             view.onViewTapped = { [weak self] in
-                debugPrint("On view tapped")
                 self?.activeItemIndex = index
                 self?.becomeFirstResponder()
             }

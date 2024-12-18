@@ -138,16 +138,6 @@ open class DesignableUnderlinedPinInputView: UIView, UIKeyInput, @preconcurrency
         false
     }
     
-    open var pasteActionTitle: String {
-        get {
-            pinView.pasteActionTitle
-        }
-        
-        set {
-            pinView.pasteActionTitle = newValue
-        }
-    }
-    
     // MARK: - UIKeyInput
     
     open var hasText: Bool {

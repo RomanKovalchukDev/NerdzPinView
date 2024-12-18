@@ -133,16 +133,6 @@ open class DesignableBorderedPinInputView: UIView {
             pinView.appearanceConfig = newValue
         }
     }
-        
-    open var pasteActionTitle: String {
-        get {
-            pinView.pasteActionTitle
-        }
-        
-        set {
-            pinView.pasteActionTitle = newValue
-        }
-    }
     
     open override var canBecomeFirstResponder: Bool {
         false
@@ -312,14 +302,12 @@ open class DesignableBorderedPinInputView: UIView {
     
     @discardableResult
     open override func becomeFirstResponder() -> Bool {
-        debugPrint("Proxy become first responder", "***")
-        return pinView.becomeFirstResponder()
+        pinView.becomeFirstResponder()
     }
     
     @discardableResult
     open override func resignFirstResponder() -> Bool {
-        debugPrint("Proxy resign first responder", "***")
-        return pinView.resignFirstResponder()
+        pinView.resignFirstResponder()
     }
         
     // MARK: - UIEditMenuInteractionDelegate

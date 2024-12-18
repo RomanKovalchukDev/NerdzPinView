@@ -31,7 +31,6 @@ public struct NerdzBorderedPinView: UIViewRepresentable {
     private let config: PinViewConfig
     private let itemsLayutConfig: BorderedItemInputView.LayoutConfig
     private let itemsAppearanceConfig: BorderedItemInputView.AppearanceConfig
-    private let pasteActionTitle: String
     
     public init(
         text: Binding<String>,
@@ -52,8 +51,7 @@ public struct NerdzBorderedPinView: UIViewRepresentable {
         textContentType: UITextContentType! = .oneTimeCode,
         config: PinViewConfig = .init(),
         itemsLayutConfig: BorderedItemInputView.LayoutConfig = .defaultValue,
-        itemsAppearanceConfig: BorderedItemInputView.AppearanceConfig = .defaultValue,
-        pasteActionTitle: String = "Paste"
+        itemsAppearanceConfig: BorderedItemInputView.AppearanceConfig = .defaultValue
     ) {
         self._text = text
         self._viewState = viewState
@@ -74,7 +72,6 @@ public struct NerdzBorderedPinView: UIViewRepresentable {
         self.config = config
         self.itemsLayutConfig = itemsLayutConfig
         self.itemsAppearanceConfig = itemsAppearanceConfig
-        self.pasteActionTitle = pasteActionTitle
     }
     
     public func makeUIView(context: Context) -> DesignableBorderedPinInputView {
