@@ -8,7 +8,11 @@
 import UIKit
 
 @MainActor
-open class PinCodeInputView<T: UIView & PinCodeItemViewType & PinCodeItemLayoutConfigurable & PinCodeItemAppearanceConfigurable>: UIView, UIKeyInput, @preconcurrency UIEditMenuInteractionDelegate {
+public class PinCodeInputView<T: UIView & PinCodeItemViewType & PinCodeItemLayoutConfigurable & PinCodeItemAppearanceConfigurable>:
+    UIView,
+    UIKeyInput,
+    @preconcurrency UIEditMenuInteractionDelegate,
+    UITextInput {
     
     // MARK: - Internal types
     
@@ -175,40 +179,61 @@ open class PinCodeInputView<T: UIView & PinCodeItemViewType & PinCodeItemLayoutC
     
     open func insertText(_ text: String) {
         if text == "\n" {
-            // Return key pressed
             if config.shouldResignFirstResponderOnReturn {
-                resignFirstResponder()
-            }
-        }
-        else {
-            if let activeItemIndex, activeItemIndex >= .zero {
-                if activeItemIndex < charactersArray.count {
-                    charactersArray[activeItemIndex] = text.first
-                }
-                
-                if activeItemIndex < itemViews.count {
-                    itemViews[activeItemIndex].setCharacter(text.first, animated: true)
-                }
-                
-                onPinValueChanged?(self.text)
-                
-                let nextItemIndex = activeItemIndex + 1
-                if nextItemIndex < config.pinLength {
-                    self.activeItemIndex = nextItemIndex
-                }
-                else {
-                    // Handle finish
-                    if config.shouldResignFirstResponderOnEnd {
-                        resignFirstResponder()
-                    }
-                }
-                
-                if self.text.count == config.pinLength {
-                    onPinViewEnteredFully?(self.text)
+                DispatchQueue.main.async {
+                    self.resignFirstResponder()
                 }
             }
+            return
         }
-        
+
+        guard !text.isEmpty else { return }
+
+        if activeItemIndex == nil {
+            activeItemIndex = 0
+        }
+
+        guard let activeItemIndex, activeItemIndex >= 0 else {
+            return
+        }
+
+        let characters = Array(text)
+        var nextItemIndex = activeItemIndex
+
+        while charactersArray.count < config.pinLength {
+            charactersArray.append(nil)
+        }
+
+        for char in characters {
+            if nextItemIndex >= config.pinLength {
+                break
+            }
+
+            if nextItemIndex < charactersArray.count {
+                charactersArray[nextItemIndex] = char
+            }
+
+            if nextItemIndex < itemViews.count {
+                itemViews[nextItemIndex].setCharacter(char, animated: true)
+            }
+
+            nextItemIndex += 1
+        }
+
+        self.activeItemIndex = min(nextItemIndex, config.pinLength - 1)
+
+        onPinValueChanged?(self.text)
+
+        if self.text.count == config.pinLength {
+            onPinViewEnteredFully?(self.text)
+            
+            if config.shouldResignFirstResponderOnEnd {
+                DispatchQueue.main.async {
+                    self.resignFirstResponder()
+                }
+            }
+        }
+
         updateSubviewStates()
     }
     
@@ -394,4 +419,211 @@ open class PinCodeInputView<T: UIView & PinCodeItemViewType & PinCodeItemLayoutC
             }
         }
     }
+    
+    // MARK: - UITextInput
+    
+    // MARK: - Handling text input
+    
+    // Not used in this view
+    public var inputDelegate: (any UITextInputDelegate)?
+    
+    // MARK: - Replacing and returning text
+    
+    public func text(in range: UITextRange) -> String? {
+        guard let mappedRange = range as? PinTextRange else {
+            return nil
+        }
+                
+        if mappedRange.isEmpty {
+            return nil
+        }
+        else {
+            return String(text[mappedRange.fullRange(in: text)])
+        }
+    }
+    
+    public func replace(_ range: UITextRange, withText text: String) {
+        guard let mappedRange = range as? PinTextRange else { return }
+
+        let newCharacters = Array(text)
+        let start = mappedRange.startPosition.offset
+        let end = mappedRange.endPosition.offset
+        
+        // Ensure start is within valid bounds
+        guard start < config.pinLength else {
+            return
+        }
+
+        // Calculate the upper bound for replacement
+        let upperBound = min(end, config.pinLength - start)
+        
+        // Replace characters in the specified range
+        for i in 0..<upperBound {
+            let targetIndex = start + i
+            if targetIndex < charactersArray.count, i < newCharacters.count {
+                charactersArray[targetIndex] = newCharacters[i]
+            }
+        }
+        
+        // Update active item index to the correct position
+        activeItemIndex = min(start + newCharacters.count, config.pinLength - 1)
+        
+        // Trigger event when PIN is fully entered
+        if self.text.count == config.pinLength {
+            onPinViewEnteredFully?(self.text)
+        }
+        
+        // Refresh UI states
+        updateSubviewStates()
+        updateAllSubviewValues()
+    }
+    public func shouldChangeText(in range: UITextRange, replacementText text: String) -> Bool {
+        // Assume that it should change characters always
+        return true
+    }
+    
+    // MARK: - Working with marked and selected text
+    
+    // Pin code should not be selected with current implementation
+    public var selectedTextRange: UITextRange? = nil
+    
+    // Otp or pin codes not inlude mark text range
+    public var markedTextRange: UITextRange? = nil
+    public var markedTextStyle: [NSAttributedString.Key : Any]? = nil
+    public func setMarkedText(_ markedText: String?, selectedRange: NSRange) {
+        // setMarkedText operation takes effect on current focus point (marked or selected)
+    }
+    public func unmarkText() {
+        // unmarkText operation takes effect on current focus point (marked or selected)
+    }
+    
+    // MARK: - Computing text ranges and text positions
+    
+    public var beginningOfDocument: UITextPosition {
+        PinTextPosition(offset: .zero)
+    }
+    
+    public var endOfDocument: UITextPosition {
+        PinTextPosition(offset: text.count)
+    }
+    
+    public func textRange(from fromPosition: UITextPosition, to toPosition: UITextPosition) -> UITextRange? {
+        guard let from = fromPosition as? PinTextPosition, let to = toPosition as? PinTextPosition else {
+            return nil
+        }
+        
+        return PinTextRange(from: from, to: to)
+    }
+    
+    public func position(from position: UITextPosition, offset: Int) -> UITextPosition? {
+        guard let from = position as? PinTextPosition else {
+            return nil
+        }
+        
+        // sometimes the system may want to know off-the-one positions, we should just return boundary
+        // if we return nil, a guarded fatal error will trigger somewhere else
+        let newOffset = max(min(from.offset + offset, text.count), 0)
+        return PinTextPosition(offset: newOffset)
+    }
+    
+    public func position(
+        from position: UITextPosition,
+        in direction: UITextLayoutDirection,
+        offset: Int
+    ) -> UITextPosition? {
+        // View supports only one direction
+        self.position(from: position, offset: offset)
+    }
+    
+    // MARK: - Evaluating text positions
+    
+    public func compare(_ position: UITextPosition, to other: UITextPosition) -> ComparisonResult {
+        guard let from = position as? PinTextPosition, let to = other as? PinTextPosition else {
+            return .orderedSame
+        }
+        
+        if from.offset < to.offset {
+            return .orderedAscending
+        }
+        
+        if from.offset > to.offset {
+            return .orderedDescending
+        }
+        
+        return .orderedSame
+    }
+    
+    public func offset(from: UITextPosition, to toPosition: UITextPosition) -> Int {
+        guard let from = from as? PinTextPosition, let to = toPosition as? PinTextPosition else {
+            return .zero
+        }
+        
+        return to.offset - from.offset
+    }
+    
+    // MARK: - Deterninging layout and writing direction
+    
+    public func position(within range: UITextRange, farthestIn direction: UITextLayoutDirection) -> UITextPosition? {
+        range.end
+    }
+    
+    public func characterRange(byExtending position: UITextPosition, in direction: UITextLayoutDirection) -> UITextRange? {
+        guard let myPosition = position as? PinTextPosition else {
+            return nil
+        }
+        
+        return PinTextRange(from: myPosition, to: PinTextPosition(offset: text.count))
+    }
+    
+    public func baseWritingDirection(for position: UITextPosition, in direction: UITextStorageDirection) -> NSWritingDirection {
+        .leftToRight
+    }
+    
+    public func setBaseWritingDirection(_ writingDirection: NSWritingDirection, for range: UITextRange) {
+        // Do nothing
+    }
+    
+    // MARK: - Geometry and hit-testing
+    
+    public func firstRect(for range: UITextRange) -> CGRect {
+        .zero
+    }
+    
+    // No system caret for this view
+    public func caretRect(for position: UITextPosition) -> CGRect {
+        .zero
+    }
+    
+    // Pin not selectable
+    public func selectionRects(for range: UITextRange) -> [UITextSelectionRect] {
+        []
+    }
+    
+    public func closestPosition(to point: CGPoint) -> UITextPosition? {
+        nil
+    }
+    
+    public func closestPosition(to point: CGPoint, within range: UITextRange) -> UITextPosition? {
+        nil
+    }
+    
+    public func characterRange(at point: CGPoint) -> UITextRange? {
+        nil
+    }
+    
+    // MARK: - Tokenizing input text
+    
+    public var tokenizer: any UITextInputTokenizer {
+        get {
+            _rawTokenizer
+        }
+        
+        set {
+            _rawTokenizer = newValue
+        }
+    }
+    
+    private lazy var _rawTokenizer: any UITextInputTokenizer = {
+        UITextInputStringTokenizer(textInput: self)
+    }()
 }

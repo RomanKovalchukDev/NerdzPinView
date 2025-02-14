@@ -16,8 +16,8 @@
                         <rect key="frame" x="0.0" y="0.0" width="393" height="852"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
-                            <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" spacing="12" translatesAutoresizingMaskIntoConstraints="NO" id="bPW-wa-66j">
-                                <rect key="frame" x="20" y="359" width="353" height="159"/>
+                            <stackView opaque="NO" contentMode="scaleToFill" ambiguous="YES" axis="vertical" spacing="12" translatesAutoresizingMaskIntoConstraints="NO" id="bPW-wa-66j">
+                                <rect key="frame" x="20" y="69" width="353" height="164"/>
                                 <subviews>
                                     <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="6Fm-Vl-ZUF" customClass="DesignableBorderedPinInputView" customModule="NerdzPinView">
                                         <rect key="frame" x="0.0" y="0.0" width="353" height="45"/>
@@ -33,11 +33,11 @@
                                             <constraint firstAttribute="height" constant="45" id="gSz-c8-slj"/>
                                         </constraints>
                                     </view>
-                                    <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="g12-OK-32N">
-                                        <rect key="frame" x="0.0" y="114" width="353" height="45"/>
+                                    <view contentMode="scaleToFill" ambiguous="YES" translatesAutoresizingMaskIntoConstraints="NO" id="g12-OK-32N">
+                                        <rect key="frame" x="0.0" y="114" width="353" height="50"/>
                                         <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                         <constraints>
-                                            <constraint firstAttribute="height" constant="45" id="am2-Q9-VhW"/>
+                                            <constraint firstAttribute="height" relation="greaterThanOrEqual" constant="45" id="am2-Q9-VhW"/>
                                         </constraints>
                                     </view>
                                 </subviews>
@@ -47,7 +47,7 @@
                         <color key="backgroundColor" systemColor="systemBackgroundColor"/>
                         <constraints>
                             <constraint firstItem="bPW-wa-66j" firstAttribute="leading" secondItem="6Tk-OE-BBY" secondAttribute="leading" constant="20" id="3G1-Jm-cuV"/>
-                            <constraint firstItem="bPW-wa-66j" firstAttribute="centerY" secondItem="6Tk-OE-BBY" secondAttribute="centerY" id="kax-cd-buU"/>
+                            <constraint firstItem="bPW-wa-66j" firstAttribute="top" secondItem="6Tk-OE-BBY" secondAttribute="top" constant="10" id="JIp-LK-bMT"/>
                             <constraint firstItem="6Tk-OE-BBY" firstAttribute="trailing" secondItem="bPW-wa-66j" secondAttribute="trailing" constant="20" id="oRF-LJ-NDS"/>
                         </constraints>
                     </view>

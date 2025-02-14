@@ -49,24 +49,34 @@ final class ViewController: UIViewController {
         )
         return view
     }()
-    
+        
     // MARK: - IBOutlets
     
     // Example of designable bordered pin view
     @IBOutlet private var borderedPinCodeView: DesignableBorderedPinInputView! {
         didSet {
+            borderedPinCodeView.autocorrectionType = .no
+            borderedPinCodeView.isSecureTextEntry = false
+            borderedPinCodeView.keyboardType = .numberPad
+            borderedPinCodeView.textContentType = .oneTimeCode
+            
             borderedPinCodeView.onPinViewEnteredFully = {
-                debugPrint($0, "XD")
+                debugPrint($0, "Callback")
             }
         }
     }
     
     // Example of designable underline pin input view
-    @IBOutlet private var underlinedPinCodeView: DesignableUnderlinedPinInputView!
+    @IBOutlet private var underlinedPinCodeView: DesignableUnderlinedPinInputView! {
+        didSet {
+            underlinedPinCodeView.isHidden = true
+        }
+    }
     
     // Example of programmatically created view
     @IBOutlet private var fromCodeContainerView: UIView! {
         didSet {
+            fromCodeContainerView.isHidden = true
             fromCodeContainerView.addSubview(pinView)
             
             // Make sure the view’s translatesAutoresizingMaskIntoConstraints is set to false
