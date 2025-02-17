@@ -35,7 +35,7 @@ final class ViewController: UIViewController {
     
     private var pinView: PinViewType = {
         let view = PinViewType()
-        view.config = PinViewConfig(pinLength: 6, isContentCentered: false)
+        view.config = PinViewConfig(pinLength: 6)
         view.layoutConfig = BorderedItemInputView.LayoutConfig(cornerRadius: .zero)
         view.appearanceConfig = BorderedItemInputView.AppearanceConfig(
             defaultBackgroundColor: Constants.PinView.backgroundColor,
@@ -49,15 +49,36 @@ final class ViewController: UIViewController {
         )
         return view
     }()
+    
+    private lazy var stripeField: OneTimeCodeTextField = {
+        let view = OneTimeCodeTextField(configuration: .init(numberOfDigits: 6))
+        return view
+    }()
         
     // MARK: - IBOutlets
+    
+    @IBOutlet private var test: UITextField! {
+        didSet {
+            test.autocorrectionType = .no
+            test.isSecureTextEntry = false
+            test.keyboardType = .numberPad
+            test.textContentType = .oneTimeCode
+        }
+    }
+    
+    @IBOutlet private var stripeContainer: UIStackView! {
+        didSet {
+            stripeContainer.addArrangedSubview(stripeField)
+        }
+    }
     
     // Example of designable bordered pin view
     @IBOutlet private var borderedPinCodeView: DesignableBorderedPinInputView! {
         didSet {
-            borderedPinCodeView.autocorrectionType = .no
+            borderedPinCodeView.config.pinLength = 10
+            borderedPinCodeView.autocorrectionType = .yes
             borderedPinCodeView.isSecureTextEntry = false
-            borderedPinCodeView.keyboardType = .numberPad
+            borderedPinCodeView.keyboardType = .default
             borderedPinCodeView.textContentType = .oneTimeCode
             
             borderedPinCodeView.onPinViewEnteredFully = {
@@ -89,6 +110,12 @@ final class ViewController: UIViewController {
                 pinView.trailingAnchor.constraint(equalTo: fromCodeContainerView.trailingAnchor)
             ])
         }
+    }
+    
+    // MARK: - IBActions
+    
+    @IBAction private func testButtonPressed() {
+        borderedPinCodeView.insertText("111111")
     }
     
     // MARK: - Life cycle

@@ -9,6 +9,10 @@ import UIKit
 
 public final class UnderlineItemInputView: PinTapableView, PinCodeItemViewType, PinCodeItemLayoutConfigurable, PinCodeItemAppearanceConfigurable {
     
+    public var caretRect: CGRect {
+        bounds
+    }
+    
     // MARK: - Internal types
     
     public struct LayoutConfig: DefaultableConfigType {

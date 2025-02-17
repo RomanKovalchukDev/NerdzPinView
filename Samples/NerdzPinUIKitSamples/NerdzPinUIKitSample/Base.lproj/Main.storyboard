@@ -16,30 +16,74 @@
                         <rect key="frame" x="0.0" y="0.0" width="393" height="852"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
-                            <stackView opaque="NO" contentMode="scaleToFill" ambiguous="YES" axis="vertical" spacing="12" translatesAutoresizingMaskIntoConstraints="NO" id="bPW-wa-66j">
-                                <rect key="frame" x="20" y="69" width="353" height="164"/>
+                            <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" spacing="12" translatesAutoresizingMaskIntoConstraints="NO" id="bPW-wa-66j">
+                                <rect key="frame" x="20" y="69" width="353" height="313.33333333333331"/>
                                 <subviews>
-                                    <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="6Fm-Vl-ZUF" customClass="DesignableBorderedPinInputView" customModule="NerdzPinView">
+                                    <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="tCQ-IC-Puv">
                                         <rect key="frame" x="0.0" y="0.0" width="353" height="45"/>
-                                        <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                        <subviews>
+                                            <scrollView clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleToFill" showsHorizontalScrollIndicator="NO" showsVerticalScrollIndicator="NO" translatesAutoresizingMaskIntoConstraints="NO" id="vER-tj-oRd">
+                                                <rect key="frame" x="0.0" y="0.0" width="353" height="45"/>
+                                                <subviews>
+                                                    <view contentMode="scaleToFill" placeholderIntrinsicWidth="353" placeholderIntrinsicHeight="45" translatesAutoresizingMaskIntoConstraints="NO" id="Ugg-Kg-sBJ" customClass="DesignableBorderedPinInputView" customModule="NerdzPinView">
+                                                        <rect key="frame" x="0.0" y="0.0" width="353" height="45"/>
+                                                        <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                                        <constraints>
+                                                            <constraint firstAttribute="height" constant="45" id="Adm-p2-tvP"/>
+                                                        </constraints>
+                                                    </view>
+                                                </subviews>
+                                                <constraints>
+                                                    <constraint firstItem="Ugg-Kg-sBJ" firstAttribute="leading" secondItem="vER-tj-oRd" secondAttribute="leading" id="IEg-JS-IZO"/>
+                                                    <constraint firstAttribute="trailing" secondItem="Ugg-Kg-sBJ" secondAttribute="trailing" id="NhR-ns-LV7"/>
+                                                    <constraint firstAttribute="bottom" secondItem="Ugg-Kg-sBJ" secondAttribute="bottom" id="g4E-IK-R9Z"/>
+                                                    <constraint firstItem="Ugg-Kg-sBJ" firstAttribute="top" secondItem="vER-tj-oRd" secondAttribute="top" id="zfD-GU-gA6"/>
+                                                </constraints>
+                                            </scrollView>
+                                        </subviews>
+                                        <color key="backgroundColor" systemColor="systemBackgroundColor"/>
                                         <constraints>
-                                            <constraint firstAttribute="height" constant="45" id="xDs-Uc-f6z"/>
+                                            <constraint firstAttribute="bottom" secondItem="vER-tj-oRd" secondAttribute="bottom" id="1pt-PW-cCC"/>
+                                            <constraint firstItem="vER-tj-oRd" firstAttribute="top" secondItem="tCQ-IC-Puv" secondAttribute="top" id="9p8-ev-ZWx"/>
+                                            <constraint firstItem="Ugg-Kg-sBJ" firstAttribute="height" secondItem="tCQ-IC-Puv" secondAttribute="height" id="F8z-Vc-eiE"/>
+                                            <constraint firstAttribute="trailing" secondItem="vER-tj-oRd" secondAttribute="trailing" id="WZm-zc-8ed"/>
+                                            <constraint firstItem="vER-tj-oRd" firstAttribute="leading" secondItem="tCQ-IC-Puv" secondAttribute="leading" id="YfV-R2-I4k"/>
+                                            <constraint firstItem="Ugg-Kg-sBJ" firstAttribute="width" secondItem="tCQ-IC-Puv" secondAttribute="width" id="pej-rn-wFs"/>
                                         </constraints>
                                     </view>
+                                    <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" translatesAutoresizingMaskIntoConstraints="NO" id="QPK-nn-vkN">
+                                        <rect key="frame" x="0.0" y="57" width="353" height="50"/>
+                                        <constraints>
+                                            <constraint firstAttribute="height" constant="50" id="KEx-VE-IUF"/>
+                                        </constraints>
+                                    </stackView>
                                     <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="v8c-hz-yvb" customClass="DesignableUnderlinedPinInputView" customModule="NerdzPinView">
-                                        <rect key="frame" x="0.0" y="57" width="353" height="45"/>
+                                        <rect key="frame" x="0.0" y="119" width="353" height="45"/>
                                         <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                         <constraints>
                                             <constraint firstAttribute="height" constant="45" id="gSz-c8-slj"/>
                                         </constraints>
                                     </view>
-                                    <view contentMode="scaleToFill" ambiguous="YES" translatesAutoresizingMaskIntoConstraints="NO" id="g12-OK-32N">
-                                        <rect key="frame" x="0.0" y="114" width="353" height="50"/>
+                                    <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="g12-OK-32N">
+                                        <rect key="frame" x="0.0" y="176" width="353" height="45"/>
                                         <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                         <constraints>
-                                            <constraint firstAttribute="height" relation="greaterThanOrEqual" constant="45" id="am2-Q9-VhW"/>
+                                            <constraint firstAttribute="height" constant="45" id="am2-Q9-VhW"/>
                                         </constraints>
                                     </view>
+                                    <textField opaque="NO" contentMode="scaleToFill" horizontalHuggingPriority="248" contentHorizontalAlignment="left" contentVerticalAlignment="center" borderStyle="roundedRect" textAlignment="natural" minimumFontSize="17" translatesAutoresizingMaskIntoConstraints="NO" id="L38-go-Gie">
+                                        <rect key="frame" x="0.0" y="233" width="353" height="34"/>
+                                        <fontDescription key="fontDescription" type="system" pointSize="14"/>
+                                        <textInputTraits key="textInputTraits" keyboardType="numberPad" textContentType="one-time-code"/>
+                                    </textField>
+                                    <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="oi2-f2-xjr">
+                                        <rect key="frame" x="0.0" y="279" width="353" height="34.333333333333314"/>
+                                        <state key="normal" title="Button"/>
+                                        <buttonConfiguration key="configuration" style="plain" title="Test insert"/>
+                                        <connections>
+                                            <action selector="testButtonPressed" destination="BYZ-38-t0r" eventType="touchUpInside" id="POg-PJ-jul"/>
+                                        </connections>
+                                    </button>
                                 </subviews>
                             </stackView>
                         </subviews>
@@ -52,8 +96,10 @@
                         </constraints>
                     </view>
                     <connections>
-                        <outlet property="borderedPinCodeView" destination="6Fm-Vl-ZUF" id="PzH-tn-EZN"/>
+                        <outlet property="borderedPinCodeView" destination="Ugg-Kg-sBJ" id="u9j-cD-Wsz"/>
                         <outlet property="fromCodeContainerView" destination="g12-OK-32N" id="99f-b3-6fj"/>
+                        <outlet property="stripeContainer" destination="QPK-nn-vkN" id="bIS-qh-jZT"/>
+                        <outlet property="test" destination="L38-go-Gie" id="m7U-KT-WY8"/>
                         <outlet property="underlinedPinCodeView" destination="v8c-hz-yvb" id="Hlx-65-oVR"/>
                     </connections>
                 </viewController>

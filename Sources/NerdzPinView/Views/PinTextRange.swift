@@ -7,60 +7,68 @@
 
 import UIKit
 
-open class PinTextRange: UITextRange {
-    
-    public let startPosition: PinTextPosition
-    public let endPosition: PinTextPosition
-    
-    public var length: Int {
-        endPosition.offset - startPosition.offset
-    }
-    
-    public override var description: String {
-        "[\(startPosition.offset) ..< \(endPosition.offset)]"
-    }
-    
-    public override var start: UITextPosition {
-        startPosition
-    }
-    
-    public override var end: UITextPosition {
-        endPosition
-    }
-    
+public final class TextRange: UITextRange {
+    let _start: TextPosition
+    let _end: TextPosition
+
     public override var isEmpty: Bool {
-        startPosition.offset >= endPosition.offset
+        return _start.index == _end.index
     }
-    
-    // from may be larger than to
-    // from and to must each contain a valid indices
-    public init?(from: PinTextPosition, to: PinTextPosition) {
-        guard from.offset < to.offset else {
+
+    public override var start: UITextPosition {
+        return _start
+    }
+
+    public override var end: UITextPosition {
+        return _end
+    }
+
+    convenience init?(start: UITextPosition, end: UITextPosition) {
+        guard
+            let start = start as? TextPosition,
+            let end = end as? TextPosition
+        else {
             return nil
         }
-        
-        self.startPosition = from
-        self.endPosition = to
+
+        self.init(start: start, end: end)
     }
-    
-    // maxLength may be negative
-    // from must contain a valid index
-    public init(from: PinTextPosition, maxOffset: Int, in baseString: String) {
-        if maxOffset >= 0 {
-            self.startPosition = from
-            let end = min(baseString.count, from.offset + maxOffset)
-            self.endPosition = PinTextPosition(offset: end)
-        }
-        else {
-            self.endPosition = from
-            let begin = max(0, from.offset + maxOffset)
-            self.startPosition = PinTextPosition(offset: begin)
-        }
+
+    init(start: TextPosition, end: TextPosition) {
+        self._start = start
+        self._end = end
     }
-    
-    public func fullRange(in baseString: String) -> Range<String.Index> {
-        let beginIndex = baseString.index(baseString.startIndex, offsetBy: startPosition.offset)
-        let endIndex = baseString.index(beginIndex, offsetBy: endPosition.offset - startPosition.offset)
+
+    public override var description: String {
+        let props: [String] = [
+            String(format: "%@: %p", NSStringFromClass(type(of: self)), self),
+            "start = \(String(describing: _start))",
+            "end = \(String(describing: _end))",
+        ]
+        return "<\(props.joined(separator: "; "))>"
+    }
+
+    public override func isEqual(_ object: Any?) -> Bool {
+        guard let other = object as? TextRange else {
+            return false
+        }
+
+        return self._start == other._start && self._end == other._end
+    }
+
+    func contains(_ index: Int) -> Bool {
+        let lowerBound = min(_start.index, _end.index)
+        let upperBound = max(_start.index, _end.index)
+        return index >= lowerBound && index <= upperBound
+    }
+
+    func stringRange(for string: String) -> Range<String.Index> {
+        let lowerBound = min(_start.index, _end.index)
+        let upperBound = max(_start.index, _end.index)
+
+        let beginIndex = string.index(string.startIndex, offsetBy: min(lowerBound, string.count))
+        let endIndex = string.index(string.startIndex, offsetBy: min(upperBound, string.count))
+
         return beginIndex..<endIndex
     }
 }

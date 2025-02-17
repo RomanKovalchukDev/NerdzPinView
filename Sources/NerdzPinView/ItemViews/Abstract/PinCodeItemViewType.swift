@@ -19,6 +19,8 @@ public protocol PinCodeItemViewType: AnyObject {
     var shouldSecureText: Bool { get set }
     var secureTextDelay: TimeInterval { get set }
     
+    var caretRect: CGRect { get }
+    
     // Animated
     func setCharacter(_ character: Character?, animated: Bool)
 }

@@ -8,6 +8,10 @@
 import UIKit
 
 public final class BorderedItemInputView: PinTapableView, PinCodeItemViewType, PinCodeItemLayoutConfigurable, PinCodeItemAppearanceConfigurable {
+    public var caretRect: CGRect {
+        bounds
+    }
+    
     
     // MARK: - Internal types
     

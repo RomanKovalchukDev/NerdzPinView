@@ -8,11 +8,98 @@
 import UIKit
 
 @MainActor
-public class PinCodeInputView<T: UIView & PinCodeItemViewType & PinCodeItemLayoutConfigurable & PinCodeItemAppearanceConfigurable>:
-    UIView,
-    UIKeyInput,
-    @preconcurrency UIEditMenuInteractionDelegate,
-    UITextInput {
+final class TextStorage {
+    var value: String = ""
+
+    let capacity: Int
+
+    var start: TextPosition {
+        return TextPosition(0)
+    }
+
+    var end: TextPosition {
+        return TextPosition(value.count)
+    }
+
+    /// Returns a range for placing the caret at the end of the content.
+    ///
+    /// A zero-length range is `UITextInput`'s way of representing the caret position. This property will
+    /// always return a zero-length range at the end of the content.
+    var endCaretRange: TextRange {
+        return TextRange(start: end, end: end)
+    }
+
+    /// A range that covers from the beginning to the end of the content.
+    var extent: TextRange {
+        return TextRange(start: start, end: end)
+    }
+
+    var isFull: Bool {
+        return value.count >= capacity
+    }
+
+//    private let allowedCharacters: CharacterSet = .init(charactersIn: "0123456789")
+
+    init(capacity: Int) {
+        assert(capacity >= 0, "Cannot have a negative capacity")
+        
+        self.capacity = max(capacity, 0)
+    }
+
+    func insert(_ text: String, at range: TextRange) -> TextRange {
+        let sanitizedText = text //.filter({
+//            $0.unicodeScalars.allSatisfy(allowedCharacters.contains(_:))
+//        })
+
+        value.replaceSubrange(range.stringRange(for: value), with: sanitizedText)
+
+        if value.count > capacity {
+            // Truncate to capacity
+            value = String(value.prefix(capacity))
+        }
+
+        let newInsertionPoint = TextPosition(range._start.index + sanitizedText.count)
+        return TextRange(start: newInsertionPoint, end: newInsertionPoint)
+    }
+
+    func delete(range: TextRange) -> TextRange {
+        value.removeSubrange(range.stringRange(for: value))
+        return TextRange(start: range._start, end: range._start)
+    }
+
+    func text(in range: TextRange) -> String? {
+        guard !range.isEmpty else {
+            return nil
+        }
+
+        let stringRange = range.stringRange(for: value)
+        return String(value[stringRange])
+    }
+
+    /// Utility method for creating a text range.
+    ///
+    /// Returns `nil` if any of the given positions is out of bounds.
+    ///
+    /// - Parameters:
+    ///   - start: Start position of the range.
+    ///   - end: End position of the range.
+    /// - Returns: Text position.
+    func makeRange(from start: TextPosition, to end: TextPosition) -> TextRange? {
+        guard
+            extent.contains(start.index),
+            extent.contains(end.index)
+        else {
+            return nil
+        }
+
+        return TextRange(start: start, end: end)
+    }
+}
+
+public typealias DigitViewType = UIView & PinCodeItemViewType & PinCodeItemLayoutConfigurable & PinCodeItemAppearanceConfigurable
+
+@MainActor
+public class PinCodeInputView<T: DigitViewType>: UIView, UIKeyInput, @preconcurrency UIEditMenuInteractionDelegate, UITextInput {
     
     // MARK: - Internal types
     
@@ -29,93 +116,92 @@ public class PinCodeInputView<T: UIView & PinCodeItemViewType & PinCodeItemLayou
     public var onBecomeFirstResponder: PinCodeEmptyAction?
     public var onResignFirstResponder: PinCodeEmptyAction?
     
-    public var text: String {
-        charactersArray
-            .compactMap({ $0 })
-            .map({ String($0) })
-            .joined()
+    /// The one-time code value without formatting.
+    public var value: String {
+        get {
+            return textStorage.value
+        }
+        set {
+            textStorage.value = newValue
+            update()
+        }
     }
     
-    open var config: PinViewConfig = PinViewConfig() {
+    public var config: PinViewConfig = PinViewConfig() {
         didSet {
             configureView()
         }
     }
     
-    open var viewState: ViewState = .normal {
+    public var viewState: ViewState = .normal {
         didSet {
-            updateSubviewStates()
+            update()
+//            updateSubviewStates()
         }
     }
     
-    open var layoutConfig: T.LayoutConfig = T.LayoutConfig.defaultValue {
+    public var layoutConfig: T.LayoutConfig = T.LayoutConfig.defaultValue {
         didSet {
             itemViews.forEach({ $0.layoutConfig = layoutConfig })
         }
     }
     
-    open var appearanceConfig: T.AppearanceConfig = T.AppearanceConfig.defaultValue {
+    public var appearanceConfig: T.AppearanceConfig = T.AppearanceConfig.defaultValue {
         didSet {
             itemViews.forEach({ $0.appearanceConfig = appearanceConfig })
         }
     }
     
-    open override var canBecomeFirstResponder: Bool {
+    public override var canBecomeFirstResponder: Bool {
         viewState != .disabled
     }
         
     // MARK: - UIKeyInput
     
-    open var hasText: Bool {
-        !text.isEmpty
+    public var hasText: Bool {
+        !value.isEmpty
     }
     
-    open var autocapitalizationType: UITextAutocapitalizationType = .none
-    open var autocorrectionType: UITextAutocorrectionType = .no
-    open var spellCheckingType: UITextSpellCheckingType = .no
-    open var smartQuotesType: UITextSmartQuotesType = .no
-    open var smartDashesType: UITextSmartDashesType = .no
-    open var smartInsertDeleteType: UITextSmartInsertDeleteType = .no
-    open var keyboardType: UIKeyboardType = .numberPad
-    open var keyboardAppearance: UIKeyboardAppearance = .default
-    open var returnKeyType: UIReturnKeyType = .done
-    open var enablesReturnKeyAutomatically: Bool = true
-    open var isSecureTextEntry: Bool = false
-    open var textContentType: UITextContentType! = .oneTimeCode
+    public var autocapitalizationType: UITextAutocapitalizationType = .none
+    public var autocorrectionType: UITextAutocorrectionType = .no
+    public var spellCheckingType: UITextSpellCheckingType = .no
+    public var smartQuotesType: UITextSmartQuotesType = .no
+    public var smartDashesType: UITextSmartDashesType = .no
+    public var smartInsertDeleteType: UITextSmartInsertDeleteType = .no
+    public var keyboardType: UIKeyboardType = .numberPad
+    public var keyboardAppearance: UIKeyboardAppearance = .default
+    public var returnKeyType: UIReturnKeyType = .done
+    public var enablesReturnKeyAutomatically: Bool = true
+    public var isSecureTextEntry: Bool = false
+    public var textContentType: UITextContentType! = .oneTimeCode
     
     // MARK: - Properties(private)
-    
-    private var activeItemIndex: Int?
-    private var charactersArray: [Character?] = []
-    
-    private var itemViews: [T] {
-        containerStackView.arrangedSubviews.compactMap({ $0 as? T })
-    }
-    
-    private lazy var containerStackView: UIStackView = {
-        let view = UIStackView()
+        
+    private lazy var itemViews: [T] = (0...config.pinLength).map { _ in
+        let view = T()
+        NSLayoutConstraint.activate([
+            view.heightAnchor.constraint(equalTo: view.widthAnchor)
+        ])
         return view
-    }()
-    
-    private lazy var editMenuInteraction: UIEditMenuInteraction = {
-        let interaction = UIEditMenuInteraction(delegate: self)
-        return interaction
-    }()
-    
-    private lazy var longPressGestureRecognizer: UILongPressGestureRecognizer = {
-        let gesture = UILongPressGestureRecognizer(target: self, action: #selector(didLongPress(_:)))
-        gesture.allowedTouchTypes = [UITouch.TouchType.direct.rawValue as NSNumber]
-        return gesture
-    }()
-    
-    // MARK: - IBActions
-    
-    @IBAction private func didLongPress(_ recognizer: UIGestureRecognizer) {
-        let location = recognizer.location(in: containerStackView)
-        let configuration = UIEditMenuConfiguration(identifier: nil, sourcePoint: location)
-
-        editMenuInteraction.presentEditMenu(with: configuration)
     }
+    
+    private var textStorage: TextStorage = TextStorage(capacity: .zero)
+    
+    private lazy var editMenuInteraction: UIEditMenuInteraction = UIEditMenuInteraction(delegate: self)
+    
+//    private lazy var longPressGestureRecognizer: UILongPressGestureRecognizer = {
+//        let gesture = UILongPressGestureRecognizer(target: self, action: #selector(didLongPress(_:)))
+//        gesture.allowedTouchTypes = [UITouch.TouchType.direct.rawValue as NSNumber]
+//        return gesture
+//    }()
+//    
+//    // MARK: - IBActions
+//    
+//    @IBAction private func didLongPress(_ recognizer: UIGestureRecognizer) {
+//        let location = recognizer.location(in: containerStackView)
+//        let configuration = UIEditMenuConfiguration(identifier: nil, sourcePoint: location)
+//        editMenuInteraction.presentEditMenu(with: configuration)
+//    }
     
     // MARK: - Life cycle
         
@@ -143,149 +229,106 @@ public class PinCodeInputView<T: UIView & PinCodeItemViewType & PinCodeItemLayou
     }
     
     open override func paste(_ sender: Any?) {
-        if let string = UIPasteboard.general.string {
-            let pin: [Character] = Array(string)
-            
-            guard !pin.isEmpty else {
-                return
-            }
-            
-            var pasteboardPinIterator: Int = 0
-            for index in (activeItemIndex ?? .zero)..<config.pinLength {
-                if pasteboardPinIterator < pin.count {
-                    charactersArray[index] = pin[pasteboardPinIterator]
-                }
-                
-                pasteboardPinIterator += 1
-            }
-            
-            activeItemIndex = min(pin.count, config.pinLength - 1)
-            
-            // Handle finish
-            if config.shouldResignFirstResponderOnEnd && pin.count >= config.pinLength {
-                resignFirstResponder()
-            }
-            
-            if self.text.count == config.pinLength {
-                onPinViewEnteredFully?(self.text)
-            }
-            
-            updateSubviewStates()
-            updateAllSubviewValues()
+        guard let string = UIPasteboard.general.string else {
+            return
         }
+        
+        insertText(string)
+        update()
     }
     
     // MARK: - UIKeyInput
     
     open func insertText(_ text: String) {
-        if text == "\n" {
-            if config.shouldResignFirstResponderOnReturn {
-                DispatchQueue.main.async {
-                    self.resignFirstResponder()
-                }
-            }
+        guard let range = selectedTextRange as? TextRange else {
             return
         }
 
-        guard !text.isEmpty else { return }
-
-        if activeItemIndex == nil {
-            activeItemIndex = 0
+        inputDelegate?.textWillChange(self)
+        selectedTextRange = textStorage.insert(text, at: range)
+        inputDelegate?.textDidChange(self)
+        
+        onPinValueChanged?(textStorage.value)
+        
+        if textStorage.isFull {
+            onPinViewEnteredFully?(value)
         }
 
-        guard let activeItemIndex, activeItemIndex >= 0 else {
-            return
-        }
-
-        let characters = Array(text)
-        var nextItemIndex = activeItemIndex
-
-        while charactersArray.count < config.pinLength {
-            charactersArray.append(nil)
-        }
-
-        for char in characters {
-            if nextItemIndex >= config.pinLength {
-                break
-            }
-
-            if nextItemIndex < charactersArray.count {
-                charactersArray[nextItemIndex] = char
-            }
-
-            if nextItemIndex < itemViews.count {
-                itemViews[nextItemIndex].setCharacter(char, animated: true)
-            }
-
-            nextItemIndex += 1
-        }
-
-        self.activeItemIndex = min(nextItemIndex, config.pinLength - 1)
-
-        onPinValueChanged?(self.text)
-
-        if self.text.count == config.pinLength {
-            onPinViewEnteredFully?(self.text)
-            
-            if config.shouldResignFirstResponderOnEnd {
-                DispatchQueue.main.async {
-                    self.resignFirstResponder()
-                }
-            }
-        }
-
-        updateSubviewStates()
+//        sendActions(for: [.editingChanged, .valueChanged])
+        #if !canImport(CompositorServices)
+//        hideMenu()
+        #endif
+        update()
     }
-    
+
     open func deleteBackward() {
-        if let activeItemIndex {
-            let oldValue = charactersArray[activeItemIndex]
-            
-            charactersArray[activeItemIndex] = nil
-            itemViews[activeItemIndex].setCharacter(nil, animated: false)
-            
-            if config.shouldMoveToPreviousOnDelete || oldValue == nil {
-                let nextItemIndex = activeItemIndex - 1
-                
-                if nextItemIndex >= 0 {
-                    self.activeItemIndex = nextItemIndex
-                    self.updateSubviewStates()
-                }
-            }
-            
-            onPinValueChanged?(self.text)
+        guard let range = selectedTextRange as? TextRange else {
+            return
         }
+
+        inputDelegate?.textWillChange(self)
+        selectedTextRange = textStorage.delete(range: range)
+        inputDelegate?.textDidChange(self)
+        
+        onPinValueChanged?(textStorage.value)
+        
+        if textStorage.isFull {
+            onPinViewEnteredFully?(value)
+        }
+
+//        sendActions(for: [.editingChanged, .valueChanged])
+        #if !canImport(CompositorServices)
+//        hideMenu()
+        #endif
+        update()
     }
     
     // MARK: - UIResponder
     
     @discardableResult
     open override func becomeFirstResponder() -> Bool {
-        // If become first responder was called without taping on specific item - select first one
-        if activeItemIndex == nil {
-            activeItemIndex = .zero
+        let result = super.becomeFirstResponder()
+
+        if result {
+            selectedTextRange = textStorage.endCaretRange
         }
         
-        // If view was in error state - make it normal
         if viewState == .error {
             viewState = .normal
         }
-                
-        updateSubviewStates()
         
         onBecomeFirstResponder?()
-        
-        return super.becomeFirstResponder()
+
+        return result
     }
     
     @discardableResult
     open override func resignFirstResponder() -> Bool {
-        activeItemIndex = nil
-        updateSubviewStates()
+        let result = super.resignFirstResponder()
+        
+        if result {
+            update()
+        }
         
         onResignFirstResponder?()
         
-        return super.resignFirstResponder()
+        return result
+    }
+    
+    public override func touchesEnded(_ touches: Set<UITouch>, with event: UIEvent?) {
+        super.touchesEnded(touches, with: event)
+
+        guard let point = touches.first?.location(in: self),
+              bounds.contains(point) else {
+            return
+        }
+
+        if isFirstResponder {
+            // show menu
+        }
+        else {
+            becomeFirstResponder()
+        }
     }
         
     // MARK: - UIEditMenuInteractionDelegate
@@ -306,118 +349,128 @@ public class PinCodeInputView<T: UIView & PinCodeItemViewType & PinCodeItemLayou
         return UIMenu(title: "", children: [pasteAction])
     }
     
-    open func setText(_ text: String?) {
-        let pin: [Character] = Array(text ?? "")
-        
-        for index in (0..<config.pinLength) {
-            if index < pin.count {
-                charactersArray[index] = pin[index]
-            }
-            else {
-                charactersArray[index] = nil
-            }
-        }
-        
-        updateAllSubviewValues()
-    }
-    
     // MARK: - Methods(private)
     
     private func configureView() {
-        initialViewLayout()
-        configureSubviews()
-        containerStackView.addInteraction(editMenuInteraction)
-        longPressGestureRecognizer.minimumPressDuration = config.pasteGestureMinDuration
-        containerStackView.addGestureRecognizer(longPressGestureRecognizer)
+        self.textStorage = TextStorage(capacity: config.pinLength)
+        let stackView = UIStackView(arrangedSubviews: arrangedItemViews())
+        stackView.spacing = true ? config.groupSpacing : config.itemSpacing
+        stackView.alignment = .center
+        stackView.distribution = .fillEqually
+        stackView.semanticContentAttribute = .forceLeftToRight
+        addAndPinSubview(stackView, directionalLayoutMargins: .zero)
     }
     
-    private func initialViewLayout() {
-        // Disable autoresizing mask translation for Auto Layout
-        containerStackView.translatesAutoresizingMaskIntoConstraints = false
+    private func arrangedItemViews() -> [UIView] {
+        guard true else {
+            // No grouping, simply return all the digit views.
+            return itemViews
+        }
 
-        // Remove any existing constraints on containerStackView
-        NSLayoutConstraint.deactivate(containerStackView.constraints)
+        // Split the digit views into two groups.
+        let groupSize = config.pinLength / 2
 
-        addSubview(containerStackView)
-        
-        // Pin containerStackView top and bottom to the view’s edges
-        NSLayoutConstraint.activate([
-            containerStackView.topAnchor.constraint(equalTo: topAnchor),
-            containerStackView.bottomAnchor.constraint(equalTo: bottomAnchor)
-        ])
-        
-        if config.isContentCentered {
-            containerStackView.distribution = .fill
-            containerStackView.spacing = config.containerSpacing
-            
-            // Center horizontally and allow flexible left/right constraints
-            NSLayoutConstraint.activate([
-                containerStackView.centerXAnchor.constraint(equalTo: centerXAnchor),
-                containerStackView.leftAnchor.constraint(greaterThanOrEqualTo: leftAnchor),
-                containerStackView.rightAnchor.constraint(lessThanOrEqualTo: rightAnchor)
-            ])
-        } else {
-            containerStackView.distribution = .equalSpacing
-            
-            // Pin left and right to the view’s edges
-            NSLayoutConstraint.activate([
-                containerStackView.leftAnchor.constraint(equalTo: leftAnchor),
-                containerStackView.rightAnchor.constraint(equalTo: rightAnchor)
-            ])
+        let groups = stride(from: 0, to: itemViews.count, by: groupSize).map {
+            Array(itemViews[$0..<min($0 + groupSize, itemViews.count)])
+        }
+
+        return groups.map {
+            let groupView = UIStackView(arrangedSubviews: $0)
+            groupView.spacing = config.itemSpacing
+            groupView.distribution = .fillEqually
+            groupView.semanticContentAttribute = .forceLeftToRight
+            return groupView
         }
     }
     
-    private func configureSubviews() {
-        containerStackView.arrangedSubviews.forEach({ $0.removeFromSuperview() })
-        charactersArray.removeAll()
+    private func update() {
+        updateItemViews()
+        updateAccessibilityProperties()
+    }
+    
+    private func updateItemViews() {
+        let digits: [Character] = .init(value)
         
-        for index in 0..<config.pinLength {
-            let view = T()
-                        
-            view.onViewTapped = { [weak self] in
-                self?.activeItemIndex = index
-                self?.becomeFirstResponder()
-            }
-            
-            view.translatesAutoresizingMaskIntoConstraints = false
-
-            // Add width and height constraints to maintain a 1:1 aspect ratio
-            NSLayoutConstraint.activate([
-                view.heightAnchor.constraint(equalTo: view.widthAnchor)
-            ])
-            
-            view.layoutConfig = layoutConfig
-            view.appearanceConfig = appearanceConfig
-            view.placeholderCharacter = config.placeholderCharacter
-            view.secureTextCharacter = config.secureTextCharacter
-            view.secureTextDelay = config.secureTextDelay
-                                                
-            charactersArray.append(nil)
-            containerStackView.addArrangedSubview(view)
-        }
-    }
-    
-    private func updateAllSubviewValues() {
-        for (index, itemView) in itemViews.enumerated() {
-            itemView.setCharacter(charactersArray[index], animated: false)
-        }
-    }
-    
-    private func updateSubviewStates() {
         for (index, itemView) in itemViews.enumerated() {
             itemView.shouldSecureText = isSecureTextEntry
+            itemView.layoutConfig = layoutConfig
+            itemView.appearanceConfig = appearanceConfig
+            itemView.placeholderCharacter = config.placeholderCharacter
+            itemView.secureTextCharacter = config.secureTextCharacter
+            itemView.secureTextDelay = config.secureTextDelay
+            itemView.setCharacter(index < digits.count ? digits[index] : nil, animated: false)
             
             switch viewState {
             case .disabled:
                 itemView.viewState = .disabled
                 
             case .normal:
-                itemView.viewState = index == activeItemIndex ? .active : .normal
+                itemView.viewState = .normal // index == activeItemIndex ? .active : .normal
                 
             case .error:
                 itemView.viewState = .error
             }
         }
+    }
+    
+    private func updateAccessibilityProperties() {
+    }
+        
+//    private func configureSubviews() {
+//        containerStackView.arrangedSubviews.forEach({ $0.removeFromSuperview() })
+//        charactersArray.removeAll()
+//        
+//        for index in 0..<config.pinLength {
+//            let view = T()
+//                        
+//            view.onViewTapped = { [weak self] in
+//                self?.activeItemIndex = index
+//                self?.becomeFirstResponder()
+//            }
+//            
+//            view.translatesAutoresizingMaskIntoConstraints = false
+//
+//            // Add width and height constraints to maintain a 1:1 aspect ratio
+//            NSLayoutConstraint.activate([
+//                view.heightAnchor.constraint(equalTo: view.widthAnchor)
+//            ])
+//            
+//            view.layoutConfig = layoutConfig
+//            view.appearanceConfig = appearanceConfig
+//            view.placeholderCharacter = config.placeholderCharacter
+//            view.secureTextCharacter = config.secureTextCharacter
+//            view.secureTextDelay = config.secureTextDelay
+//                                                
+//            charactersArray.append(nil)
+//            containerStackView.addArrangedSubview(view)
+//        }
+//    }
+    
+//    private func updateAllSubviewValues() {
+//        for (index, itemView) in itemViews.enumerated() {
+//            itemView.setCharacter(charactersArray[index], animated: false)
+//        }
+//    }
+    
+//    private func updateSubviewStates() {
+//        for (index, itemView) in itemViews.enumerated() {
+//            itemView.shouldSecureText = isSecureTextEntry
+//            
+//            switch viewState {
+//            case .disabled:
+//                itemView.viewState = .disabled
+//                
+//            case .normal:
+//                itemView.viewState = index == activeItemIndex ? .active : .normal
+//                
+//            case .error:
+//                itemView.viewState = .error
+//            }
+//        }
+//    }
+    
+    private func clampIndex(_ index: Int) -> Int {
+        return max(min(index, config.pinLength - 1), 0)
     }
     
     // MARK: - UITextInput
@@ -430,53 +483,17 @@ public class PinCodeInputView<T: UIView & PinCodeItemViewType & PinCodeItemLayou
     // MARK: - Replacing and returning text
     
     public func text(in range: UITextRange) -> String? {
-        guard let mappedRange = range as? PinTextRange else {
+        guard let range = range as? TextRange else {
             return nil
         }
-                
-        if mappedRange.isEmpty {
-            return nil
-        }
-        else {
-            return String(text[mappedRange.fullRange(in: text)])
-        }
+
+        return textStorage.text(in: range)
     }
     
     public func replace(_ range: UITextRange, withText text: String) {
-        guard let mappedRange = range as? PinTextRange else { return }
-
-        let newCharacters = Array(text)
-        let start = mappedRange.startPosition.offset
-        let end = mappedRange.endPosition.offset
-        
-        // Ensure start is within valid bounds
-        guard start < config.pinLength else {
-            return
-        }
-
-        // Calculate the upper bound for replacement
-        let upperBound = min(end, config.pinLength - start)
-        
-        // Replace characters in the specified range
-        for i in 0..<upperBound {
-            let targetIndex = start + i
-            if targetIndex < charactersArray.count, i < newCharacters.count {
-                charactersArray[targetIndex] = newCharacters[i]
-            }
-        }
-        
-        // Update active item index to the correct position
-        activeItemIndex = min(start + newCharacters.count, config.pinLength - 1)
-        
-        // Trigger event when PIN is fully entered
-        if self.text.count == config.pinLength {
-            onPinViewEnteredFully?(self.text)
-        }
-        
-        // Refresh UI states
-        updateSubviewStates()
-        updateAllSubviewValues()
+        // Do nothing
     }
+    
     public func shouldChangeText(in range: UITextRange, replacementText text: String) -> Bool {
         // Assume that it should change characters always
         return true
@@ -484,46 +501,70 @@ public class PinCodeInputView<T: UIView & PinCodeItemViewType & PinCodeItemLayou
     
     // MARK: - Working with marked and selected text
     
-    // Pin code should not be selected with current implementation
-    public var selectedTextRange: UITextRange? = nil
+    public var selectedTextRange: UITextRange? = nil {
+        willSet {
+            inputDelegate?.selectionWillChange(self)
+        }
+        didSet {
+            inputDelegate?.selectionDidChange(self)
+            update()
+        }
+    }
     
     // Otp or pin codes not inlude mark text range
-    public var markedTextRange: UITextRange? = nil
-    public var markedTextStyle: [NSAttributedString.Key : Any]? = nil
-    public func setMarkedText(_ markedText: String?, selectedRange: NSRange) {
-        // setMarkedText operation takes effect on current focus point (marked or selected)
+    
+    public var markedTextRange: UITextRange? {
+        return nil
     }
+    
+    public var markedTextStyle: [NSAttributedString.Key : Any]? {
+        get {
+            return nil
+        }
+        set {
+            // We don't support marked text
+        }
+    }
+    
+    public func setMarkedText(_ markedText: String?, selectedRange: NSRange) {
+        // We don't support marked text
+    }
+    
     public func unmarkText() {
-        // unmarkText operation takes effect on current focus point (marked or selected)
+        // We don't support marked text
     }
     
     // MARK: - Computing text ranges and text positions
     
     public var beginningOfDocument: UITextPosition {
-        PinTextPosition(offset: .zero)
+        return textStorage.start
     }
     
     public var endOfDocument: UITextPosition {
-        PinTextPosition(offset: text.count)
+        return textStorage.end
     }
     
     public func textRange(from fromPosition: UITextPosition, to toPosition: UITextPosition) -> UITextRange? {
-        guard let from = fromPosition as? PinTextPosition, let to = toPosition as? PinTextPosition else {
+        guard let fromPosition = fromPosition as? TextPosition, let toPosition = toPosition as? TextPosition else {
             return nil
         }
-        
-        return PinTextRange(from: from, to: to)
+
+        return textStorage.makeRange(from: fromPosition, to: toPosition)
     }
     
     public func position(from position: UITextPosition, offset: Int) -> UITextPosition? {
-        guard let from = position as? PinTextPosition else {
+        guard let position = position as? TextPosition else {
             return nil
         }
-        
-        // sometimes the system may want to know off-the-one positions, we should just return boundary
-        // if we return nil, a guarded fatal error will trigger somewhere else
-        let newOffset = max(min(from.offset + offset, text.count), 0)
-        return PinTextPosition(offset: newOffset)
+
+        let newIndex = position.index + offset
+
+        guard textStorage.extent.contains(newIndex) else {
+            // Out of bounds
+            return nil
+        }
+
+        return TextPosition(newIndex)
     }
     
     public func position(
@@ -531,51 +572,79 @@ public class PinCodeInputView<T: UIView & PinCodeItemViewType & PinCodeItemLayou
         in direction: UITextLayoutDirection,
         offset: Int
     ) -> UITextPosition? {
-        // View supports only one direction
-        self.position(from: position, offset: offset)
+        switch direction {
+        case .right:
+            return self.position(from: position, offset: offset)
+            
+        case .left:
+            return self.position(from: position, offset: -offset)
+            
+        case .up:
+            return offset > 0 ? beginningOfDocument : endOfDocument
+            
+        case .down:
+            return offset > 0 ? endOfDocument : beginningOfDocument
+            
+        @unknown default:
+            return nil
+        }
     }
     
     // MARK: - Evaluating text positions
     
     public func compare(_ position: UITextPosition, to other: UITextPosition) -> ComparisonResult {
-        guard let from = position as? PinTextPosition, let to = other as? PinTextPosition else {
+        guard let position = position as? TextPosition, let other = other as? TextPosition else {
             return .orderedSame
         }
-        
-        if from.offset < to.offset {
-            return .orderedAscending
-        }
-        
-        if from.offset > to.offset {
-            return .orderedDescending
-        }
-        
-        return .orderedSame
+
+        return position.compare(other)
     }
     
     public func offset(from: UITextPosition, to toPosition: UITextPosition) -> Int {
-        guard let from = from as? PinTextPosition, let to = toPosition as? PinTextPosition else {
-            return .zero
+        guard let from = from as? TextPosition, let toPosition = toPosition as? TextPosition else {
+            return 0
         }
-        
-        return to.offset - from.offset
+
+        return toPosition.index - from.index
     }
     
     // MARK: - Deterninging layout and writing direction
     
     public func position(within range: UITextRange, farthestIn direction: UITextLayoutDirection) -> UITextPosition? {
-        range.end
+        guard let range = range as? TextRange else {
+            return nil
+        }
+
+        switch direction {
+        case .left, .up:
+            return range.start
+            
+        case .right, .down:
+            return range.end
+            
+        @unknown default:
+            return nil
+        }
     }
     
     public func characterRange(byExtending position: UITextPosition, in direction: UITextLayoutDirection) -> UITextRange? {
-        guard let myPosition = position as? PinTextPosition else {
+        switch direction {
+        case .right:
+            return self.textRange(from: position, to: endOfDocument)
+            
+        case .left:
+            return self.textRange(from: beginningOfDocument, to: position)
+            
+        case .up, .down:
+            return nil
+            
+        @unknown default:
             return nil
         }
-        
-        return PinTextRange(from: myPosition, to: PinTextPosition(offset: text.count))
     }
     
     public func baseWritingDirection(for position: UITextPosition, in direction: UITextStorageDirection) -> NSWritingDirection {
+        // OTP input should be left-to-right always.
         .leftToRight
     }
     
@@ -586,44 +655,65 @@ public class PinCodeInputView<T: UIView & PinCodeItemViewType & PinCodeItemLayou
     // MARK: - Geometry and hit-testing
     
     public func firstRect(for range: UITextRange) -> CGRect {
-        .zero
+        guard let range = range as? TextRange, !range.isEmpty else {
+            return .zero
+        }
+
+        // This method should return a rectangle that contains the digit views that
+        // fall inside the given TextRange. For example, a [0,2] TextRange should
+        // return a rectangle that contains digit views 0 and 1:
+        //
+        // 0   1   2    3    4   5   6  <- TextPosition
+        //  [*] [*] [*]   [*] [*] [*]   <- UI
+        //   0   1   2     3   4   5    <- DigitView index
+        // ^       ^
+        // |_______|                    <- [0,2] TextRange
+
+        let firstDigitView = itemViews[clampIndex(range._start.index)]
+        let secondDigitView = itemViews[clampIndex(range._end.index - 1)]
+
+        let firstRect = firstDigitView.convert(firstDigitView.bounds, to: self)
+        let secondRect = secondDigitView.convert(secondDigitView.bounds, to: self)
+
+        return firstRect.union(secondRect)
     }
     
-    // No system caret for this view
     public func caretRect(for position: UITextPosition) -> CGRect {
-        .zero
+        return .zero
+//        guard let position = position as? TextPosition else {
+//            return .zero
+//        }
+//
+//        let digitView = itemViews[clampIndex(position.index)]
+//        return digitView.convert(digitView.caretRect, to: self)
     }
     
-    // Pin not selectable
     public func selectionRects(for range: UITextRange) -> [UITextSelectionRect] {
-        []
+        // No text-selection
+        return []
     }
     
     public func closestPosition(to point: CGPoint) -> UITextPosition? {
-        nil
+        return closestPosition(to: point, within: textStorage.extent)
     }
     
     public func closestPosition(to point: CGPoint, within range: UITextRange) -> UITextPosition? {
-        nil
+        guard let range = range as? TextRange, let digitView = hitTest(point, with: nil) as? T, let index = itemViews.firstIndex(of: digitView) else {
+            return nil
+        }
+
+        return range.contains(index) ? TextPosition(index) : nil
     }
     
     public func characterRange(at point: CGPoint) -> UITextRange? {
-        nil
+        guard let startPosition = closestPosition(to: point) as? TextPosition, let endPosition = position(from: startPosition, offset: 1) else {
+            return nil
+        }
+
+        return self.textRange(from: startPosition, to: endPosition)
     }
     
     // MARK: - Tokenizing input text
     
-    public var tokenizer: any UITextInputTokenizer {
-        get {
-            _rawTokenizer
-        }
-        
-        set {
-            _rawTokenizer = newValue
-        }
-    }
-    
-    private lazy var _rawTokenizer: any UITextInputTokenizer = {
-        UITextInputStringTokenizer(textInput: self)
-    }()
+    public lazy var tokenizer: any UITextInputTokenizer = UITextInputStringTokenizer(textInput: self)
 }

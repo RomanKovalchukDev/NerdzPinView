@@ -17,9 +17,9 @@ public struct PinViewConfig {
     public var pasteActionTitle: String
     public var pasteGestureMinDuration: TimeInterval
     
-    // If content is centered - stack view would take located in center of the view / otherwise would be stretched
-    public var isContentCentered: Bool
-    public var containerSpacing: CGFloat
+    public var shouldGroupNumbers: Bool
+    public var itemSpacing: CGFloat
+    public var groupSpacing: CGFloat
     
     public var shouldMoveToPreviousOnDelete: Bool
     public var shouldResignFirstResponderOnEnd: Bool
@@ -32,8 +32,9 @@ public struct PinViewConfig {
         secureTextDelay: TimeInterval = 0.8,
         pasteActionTitle: String = "Paste",
         pasteGestureMinDuration: TimeInterval = 0.2,
-        isContentCentered: Bool = true,
-        containerSpacing: CGFloat = 10,
+        shouldGroupNumbers: Bool = true,
+        itemSpacing: CGFloat = 10,
+        groupSpacing: CGFloat = 10,
         shouldMoveToPreviousOnDelete: Bool = true,
         shouldResignFirstResponderOnEnd: Bool = true,
         shouldResignFirstResponderOnReturn: Bool = false
@@ -44,8 +45,9 @@ public struct PinViewConfig {
         self.secureTextDelay = secureTextDelay
         self.pasteActionTitle = pasteActionTitle
         self.pasteGestureMinDuration = pasteGestureMinDuration
-        self.isContentCentered = isContentCentered
-        self.containerSpacing = containerSpacing
+        self.shouldGroupNumbers = shouldGroupNumbers
+        self.itemSpacing = itemSpacing
+        self.groupSpacing = groupSpacing
         self.shouldMoveToPreviousOnDelete = shouldMoveToPreviousOnDelete
         self.shouldResignFirstResponderOnEnd = shouldResignFirstResponderOnEnd
         self.shouldResignFirstResponderOnReturn = shouldResignFirstResponderOnReturn

@@ -35,7 +35,7 @@ open class DesignableBorderedPinInputView: UIView {
     
     open var pinView: PinViewType = {
         let view = PinViewType()
-        view.config = PinViewConfig(pinLength: 6, isContentCentered: false)
+        view.config = PinViewConfig(pinLength: 6)
         view.layoutConfig = BorderedItemInputView.LayoutConfig(cornerRadius: .zero)
         view.appearanceConfig = BorderedItemInputView.AppearanceConfig(
             defaultBackgroundColor: Constants.PinView.backgroundColor,
@@ -91,7 +91,7 @@ open class DesignableBorderedPinInputView: UIView {
     }
     
     public var text: String {
-        pinView.text
+        pinView.value
     }
     
     open var config: PinViewConfig {
@@ -321,7 +321,7 @@ open class DesignableBorderedPinInputView: UIView {
     }
     
     open func setText(_ text: String?) {
-        pinView.setText(text)
+        pinView.value = text ?? ""
     }
     
     open func initialConfiguration() {
