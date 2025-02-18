@@ -14,8 +14,10 @@ public protocol PinCodeItemViewType: AnyObject {
     
     var viewState: PinCodeItemViewState { get set }
     var valueCharacter: Character? { get }
+    
     var placeholderCharacter: Character? { get set }
     var secureTextCharacter: Character? { get set }
+    
     var shouldSecureText: Bool { get set }
     var secureTextDelay: TimeInterval { get set }
     

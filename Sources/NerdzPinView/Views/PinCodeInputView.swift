@@ -7,95 +7,6 @@
 
 import UIKit
 
-@MainActor
-final class TextStorage {
-    var value: String = ""
-
-    let capacity: Int
-
-    var start: TextPosition {
-        return TextPosition(0)
-    }
-
-    var end: TextPosition {
-        return TextPosition(value.count)
-    }
-
-    /// Returns a range for placing the caret at the end of the content.
-    ///
-    /// A zero-length range is `UITextInput`'s way of representing the caret position. This property will
-    /// always return a zero-length range at the end of the content.
-    var endCaretRange: TextRange {
-        return TextRange(start: end, end: end)
-    }
-
-    /// A range that covers from the beginning to the end of the content.
-    var extent: TextRange {
-        return TextRange(start: start, end: end)
-    }
-
-    var isFull: Bool {
-        return value.count >= capacity
-    }
-
-//    private let allowedCharacters: CharacterSet = .init(charactersIn: "0123456789")
-
-    init(capacity: Int) {
-        assert(capacity >= 0, "Cannot have a negative capacity")
-        
-        self.capacity = max(capacity, 0)
-    }
-
-    func insert(_ text: String, at range: TextRange) -> TextRange {
-        let sanitizedText = text //.filter({
-//            $0.unicodeScalars.allSatisfy(allowedCharacters.contains(_:))
-//        })
-
-        value.replaceSubrange(range.stringRange(for: value), with: sanitizedText)
-
-        if value.count > capacity {
-            // Truncate to capacity
-            value = String(value.prefix(capacity))
-        }
-
-        let newInsertionPoint = TextPosition(range._start.index + sanitizedText.count)
-        return TextRange(start: newInsertionPoint, end: newInsertionPoint)
-    }
-
-    func delete(range: TextRange) -> TextRange {
-        value.removeSubrange(range.stringRange(for: value))
-        return TextRange(start: range._start, end: range._start)
-    }
-
-    func text(in range: TextRange) -> String? {
-        guard !range.isEmpty else {
-            return nil
-        }
-
-        let stringRange = range.stringRange(for: value)
-        return String(value[stringRange])
-    }
-
-    /// Utility method for creating a text range.
-    ///
-    /// Returns `nil` if any of the given positions is out of bounds.
-    ///
-    /// - Parameters:
-    ///   - start: Start position of the range.
-    ///   - end: End position of the range.
-    /// - Returns: Text position.
-    func makeRange(from start: TextPosition, to end: TextPosition) -> TextRange? {
-        guard
-            extent.contains(start.index),
-            extent.contains(end.index)
-        else {
-            return nil
-        }
-
-        return TextRange(start: start, end: end)
-    }
-}
-
 public typealias DigitViewType = UIView & PinCodeItemViewType & PinCodeItemLayoutConfigurable & PinCodeItemAppearanceConfigurable
 
 @MainActor
@@ -119,10 +30,11 @@ public class PinCodeInputView<T: DigitViewType>: UIView, UIKeyInput, @preconcurr
     /// The one-time code value without formatting.
     public var value: String {
         get {
-            return textStorage.value
+            textStorage.value
         }
         set {
             textStorage.value = newValue
+            
             update()
         }
     }
@@ -136,7 +48,6 @@ public class PinCodeInputView<T: DigitViewType>: UIView, UIKeyInput, @preconcurr
     public var viewState: ViewState = .normal {
         didSet {
             update()
-//            updateSubviewStates()
         }
     }
     
@@ -177,31 +88,9 @@ public class PinCodeInputView<T: DigitViewType>: UIView, UIKeyInput, @preconcurr
     
     // MARK: - Properties(private)
         
-    private lazy var itemViews: [T] = (0...config.pinLength).map { _ in
-        let view = T()
-        NSLayoutConstraint.activate([
-            view.heightAnchor.constraint(equalTo: view.widthAnchor)
-        ])
-        return view
-    }
-    
+    private var itemViews: [T] = []
     private var textStorage: TextStorage = TextStorage(capacity: .zero)
-    
     private lazy var editMenuInteraction: UIEditMenuInteraction = UIEditMenuInteraction(delegate: self)
-    
-//    private lazy var longPressGestureRecognizer: UILongPressGestureRecognizer = {
-//        let gesture = UILongPressGestureRecognizer(target: self, action: #selector(didLongPress(_:)))
-//        gesture.allowedTouchTypes = [UITouch.TouchType.direct.rawValue as NSNumber]
-//        return gesture
-//    }()
-//    
-//    // MARK: - IBActions
-//    
-//    @IBAction private func didLongPress(_ recognizer: UIGestureRecognizer) {
-//        let location = recognizer.location(in: containerStackView)
-//        let configuration = UIEditMenuConfiguration(identifier: nil, sourcePoint: location)
-//        editMenuInteraction.presentEditMenu(with: configuration)
-//    }
     
     // MARK: - Life cycle
         
@@ -234,7 +123,6 @@ public class PinCodeInputView<T: DigitViewType>: UIView, UIKeyInput, @preconcurr
         }
         
         insertText(string)
-        update()
     }
     
     // MARK: - UIKeyInput
@@ -248,16 +136,7 @@ public class PinCodeInputView<T: DigitViewType>: UIView, UIKeyInput, @preconcurr
         selectedTextRange = textStorage.insert(text, at: range)
         inputDelegate?.textDidChange(self)
         
-        onPinValueChanged?(textStorage.value)
-        
-        if textStorage.isFull {
-            onPinViewEnteredFully?(value)
-        }
-
-//        sendActions(for: [.editingChanged, .valueChanged])
-        #if !canImport(CompositorServices)
-//        hideMenu()
-        #endif
+        notifyViewAfterUpdates()
         update()
     }
 
@@ -270,17 +149,17 @@ public class PinCodeInputView<T: DigitViewType>: UIView, UIKeyInput, @preconcurr
         selectedTextRange = textStorage.delete(range: range)
         inputDelegate?.textDidChange(self)
         
+        notifyViewAfterUpdates()
+        update()
+    }
+    
+    private func notifyViewAfterUpdates() {
         onPinValueChanged?(textStorage.value)
         
         if textStorage.isFull {
             onPinViewEnteredFully?(value)
+            resignFirstResponder()
         }
-
-//        sendActions(for: [.editingChanged, .valueChanged])
-        #if !canImport(CompositorServices)
-//        hideMenu()
-        #endif
-        update()
     }
     
     // MARK: - UIResponder
@@ -291,14 +170,14 @@ public class PinCodeInputView<T: DigitViewType>: UIView, UIKeyInput, @preconcurr
 
         if result {
             selectedTextRange = textStorage.endCaretRange
+            
+            if viewState == .error {
+                viewState = .normal
+            }
+            
+            onBecomeFirstResponder?()
         }
         
-        if viewState == .error {
-            viewState = .normal
-        }
-        
-        onBecomeFirstResponder?()
-
         return result
     }
     
@@ -308,9 +187,9 @@ public class PinCodeInputView<T: DigitViewType>: UIView, UIKeyInput, @preconcurr
         
         if result {
             update()
+            
+            onResignFirstResponder?()
         }
-        
-        onResignFirstResponder?()
         
         return result
     }
@@ -318,13 +197,12 @@ public class PinCodeInputView<T: DigitViewType>: UIView, UIKeyInput, @preconcurr
     public override func touchesEnded(_ touches: Set<UITouch>, with event: UIEvent?) {
         super.touchesEnded(touches, with: event)
 
-        guard let point = touches.first?.location(in: self),
-              bounds.contains(point) else {
+        guard let point = touches.first?.location(in: self), bounds.contains(point) else {
             return
         }
 
         if isFirstResponder {
-            // show menu
+            showMenu()
         }
         else {
             becomeFirstResponder()
@@ -351,18 +229,43 @@ public class PinCodeInputView<T: DigitViewType>: UIView, UIKeyInput, @preconcurr
     
     // MARK: - Methods(private)
     
+    private func showMenu() {
+        let location = CGPoint(x: bounds.midX, y: bounds.midY)
+        let configuration = UIEditMenuConfiguration(identifier: nil, sourcePoint: location)
+        editMenuInteraction.presentEditMenu(with: configuration)
+    }
+    
     private func configureView() {
         self.textStorage = TextStorage(capacity: config.pinLength)
+        
+        self.itemViews = (0..<config.pinLength).map { _ in
+            let view = T()
+            
+            view.placeholderCharacter = config.placeholderCharacter
+            view.secureTextCharacter = config.secureTextCharacter
+            view.secureTextDelay = config.secureTextDelay
+            view.translatesAutoresizingMaskIntoConstraints = false
+            
+            NSLayoutConstraint.activate([
+                view.heightAnchor.constraint(equalTo: view.widthAnchor)
+            ])
+            
+            return view
+        }
+        
         let stackView = UIStackView(arrangedSubviews: arrangedItemViews())
-        stackView.spacing = true ? config.groupSpacing : config.itemSpacing
+        stackView.spacing = config.shouldGroupNumbers ? config.groupSpacing : config.itemSpacing
         stackView.alignment = .center
+        stackView.backgroundColor = .red
         stackView.distribution = .fillEqually
         stackView.semanticContentAttribute = .forceLeftToRight
         addAndPinSubview(stackView, directionalLayoutMargins: .zero)
+        
+        update()
     }
     
     private func arrangedItemViews() -> [UIView] {
-        guard true else {
+        guard config.shouldGroupNumbers else {
             // No grouping, simply return all the digit views.
             return itemViews
         }
@@ -390,14 +293,13 @@ public class PinCodeInputView<T: DigitViewType>: UIView, UIKeyInput, @preconcurr
     
     private func updateItemViews() {
         let digits: [Character] = .init(value)
+        let selectedRange = selectedTextRange as? TextRange
         
         for (index, itemView) in itemViews.enumerated() {
             itemView.shouldSecureText = isSecureTextEntry
             itemView.layoutConfig = layoutConfig
             itemView.appearanceConfig = appearanceConfig
-            itemView.placeholderCharacter = config.placeholderCharacter
-            itemView.secureTextCharacter = config.secureTextCharacter
-            itemView.secureTextDelay = config.secureTextDelay
+            
             itemView.setCharacter(index < digits.count ? digits[index] : nil, animated: false)
             
             switch viewState {
@@ -405,7 +307,7 @@ public class PinCodeInputView<T: DigitViewType>: UIView, UIKeyInput, @preconcurr
                 itemView.viewState = .disabled
                 
             case .normal:
-                itemView.viewState = .normal // index == activeItemIndex ? .active : .normal
+                itemView.viewState = isFirstResponder && (selectedRange?.contains(index) ?? false) ? .active : .normal
                 
             case .error:
                 itemView.viewState = .error
@@ -414,63 +316,11 @@ public class PinCodeInputView<T: DigitViewType>: UIView, UIKeyInput, @preconcurr
     }
     
     private func updateAccessibilityProperties() {
+        accessibilityValue = value
     }
-        
-//    private func configureSubviews() {
-//        containerStackView.arrangedSubviews.forEach({ $0.removeFromSuperview() })
-//        charactersArray.removeAll()
-//        
-//        for index in 0..<config.pinLength {
-//            let view = T()
-//                        
-//            view.onViewTapped = { [weak self] in
-//                self?.activeItemIndex = index
-//                self?.becomeFirstResponder()
-//            }
-//            
-//            view.translatesAutoresizingMaskIntoConstraints = false
-//
-//            // Add width and height constraints to maintain a 1:1 aspect ratio
-//            NSLayoutConstraint.activate([
-//                view.heightAnchor.constraint(equalTo: view.widthAnchor)
-//            ])
-//            
-//            view.layoutConfig = layoutConfig
-//            view.appearanceConfig = appearanceConfig
-//            view.placeholderCharacter = config.placeholderCharacter
-//            view.secureTextCharacter = config.secureTextCharacter
-//            view.secureTextDelay = config.secureTextDelay
-//                                                
-//            charactersArray.append(nil)
-//            containerStackView.addArrangedSubview(view)
-//        }
-//    }
-    
-//    private func updateAllSubviewValues() {
-//        for (index, itemView) in itemViews.enumerated() {
-//            itemView.setCharacter(charactersArray[index], animated: false)
-//        }
-//    }
-    
-//    private func updateSubviewStates() {
-//        for (index, itemView) in itemViews.enumerated() {
-//            itemView.shouldSecureText = isSecureTextEntry
-//            
-//            switch viewState {
-//            case .disabled:
-//                itemView.viewState = .disabled
-//                
-//            case .normal:
-//                itemView.viewState = index == activeItemIndex ? .active : .normal
-//                
-//            case .error:
-//                itemView.viewState = .error
-//            }
-//        }
-//    }
     
     private func clampIndex(_ index: Int) -> Int {
-        return max(min(index, config.pinLength - 1), 0)
+        max(min(index, config.pinLength - 1), 0)
     }
     
     // MARK: - UITextInput
@@ -679,13 +529,12 @@ public class PinCodeInputView<T: DigitViewType>: UIView, UIKeyInput, @preconcurr
     }
     
     public func caretRect(for position: UITextPosition) -> CGRect {
-        return .zero
-//        guard let position = position as? TextPosition else {
-//            return .zero
-//        }
-//
-//        let digitView = itemViews[clampIndex(position.index)]
-//        return digitView.convert(digitView.caretRect, to: self)
+        guard let position = position as? TextPosition else {
+            return .zero
+        }
+
+        let digitView = itemViews[clampIndex(position.index)]
+        return digitView.convert(digitView.caretRect, to: self)
     }
     
     public func selectionRects(for range: UITextRange) -> [UITextSelectionRect] {

@@ -14,13 +14,13 @@ public class TextPosition: UITextPosition {
         self.index = index
     }
 
-//    override var description: String {
-//        let props: [String] = [
-//            String(format: "%@: %p", NSStringFromClass(type(of: self)), self),
-//            "index = \(String(describing: index))",
-//        ]
-//        return "<\(props.joined(separator: "; "))>"
-//    }
+    public override var description: String {
+        let props: [String] = [
+            String(format: "%@: %p", NSStringFromClass(type(of: self)), self),
+            "index = \(String(describing: index))",
+        ]
+        return "<\(props.joined(separator: "; "))>"
+    }
 
     public override func isEqual(_ object: Any?) -> Bool {
         guard let other = object as? TextPosition else {

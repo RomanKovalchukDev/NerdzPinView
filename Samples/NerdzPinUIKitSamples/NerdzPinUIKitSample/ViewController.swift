@@ -12,7 +12,7 @@ final class ViewController: UIViewController {
     
     // MARK: - Aliases
     
-    public typealias PinViewType = PinCodeInputView<BorderedItemInputView>
+    public typealias PinViewType = PinCodeInputViewOld<BorderedItemInputView>
     
     // MARK: - Internal types
 
@@ -36,6 +36,7 @@ final class ViewController: UIViewController {
     private var pinView: PinViewType = {
         let view = PinViewType()
         view.config = PinViewConfig(pinLength: 6)
+        view.config.shouldResignFirstResponderOnEnd = false
         view.layoutConfig = BorderedItemInputView.LayoutConfig(cornerRadius: .zero)
         view.appearanceConfig = BorderedItemInputView.AppearanceConfig(
             defaultBackgroundColor: Constants.PinView.backgroundColor,
@@ -47,6 +48,11 @@ final class ViewController: UIViewController {
             cursorColor: Constants.PinView.tintColor,
             font: Constants.PinView.font
         )
+        view.config.shouldGroupNumbers = true
+        view.autocorrectionType = .yes
+        view.isSecureTextEntry = false
+        view.keyboardType = .default
+        view.textContentType = .oneTimeCode
         return view
     }()
     
@@ -59,6 +65,7 @@ final class ViewController: UIViewController {
     
     @IBOutlet private var test: UITextField! {
         didSet {
+            test.isHidden = true
             test.autocorrectionType = .no
             test.isSecureTextEntry = false
             test.keyboardType = .numberPad
@@ -68,6 +75,7 @@ final class ViewController: UIViewController {
     
     @IBOutlet private var stripeContainer: UIStackView! {
         didSet {
+            stripeContainer.isHidden = true
             stripeContainer.addArrangedSubview(stripeField)
         }
     }
@@ -75,7 +83,11 @@ final class ViewController: UIViewController {
     // Example of designable bordered pin view
     @IBOutlet private var borderedPinCodeView: DesignableBorderedPinInputView! {
         didSet {
-            borderedPinCodeView.config.pinLength = 10
+            borderedPinCodeView.config.pinLength = 6
+            borderedPinCodeView.config.groupSpacing = 20
+            borderedPinCodeView.config.itemSpacing = 5
+            borderedPinCodeView.config.shouldGroupNumbers = true
+            borderedPinCodeView.config.placeholderCharacter = "X"
             borderedPinCodeView.autocorrectionType = .yes
             borderedPinCodeView.isSecureTextEntry = false
             borderedPinCodeView.keyboardType = .default
@@ -97,7 +109,7 @@ final class ViewController: UIViewController {
     // Example of programmatically created view
     @IBOutlet private var fromCodeContainerView: UIView! {
         didSet {
-            fromCodeContainerView.isHidden = true
+            fromCodeContainerView.isHidden = false
             fromCodeContainerView.addSubview(pinView)
             
             // Make sure the view’s translatesAutoresizingMaskIntoConstraints is set to false
