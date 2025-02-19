@@ -17,7 +17,7 @@
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
                             <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" spacing="12" translatesAutoresizingMaskIntoConstraints="NO" id="bPW-wa-66j">
-                                <rect key="frame" x="20" y="79" width="353" height="159"/>
+                                <rect key="frame" x="20" y="79" width="353" height="164"/>
                                 <subviews>
                                     <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="6Fm-Vl-ZUF" customClass="DesignableBorderedPinInputView" customModule="NerdzPinView">
                                         <rect key="frame" x="0.0" y="0.0" width="353" height="45"/>
@@ -34,10 +34,10 @@
                                         </constraints>
                                     </view>
                                     <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="g12-OK-32N" customClass="DesignableOneTimeCodeInputView" customModule="NerdzPinView">
-                                        <rect key="frame" x="0.0" y="114" width="353" height="45"/>
+                                        <rect key="frame" x="0.0" y="114" width="353" height="50"/>
                                         <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                         <constraints>
-                                            <constraint firstAttribute="height" constant="45" id="am2-Q9-VhW"/>
+                                            <constraint firstAttribute="height" constant="50" id="am2-Q9-VhW"/>
                                         </constraints>
                                     </view>
                                 </subviews>

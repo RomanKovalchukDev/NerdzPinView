@@ -14,21 +14,23 @@ public final class OneTimeItemView: OneTimeCodeItemView {
     public struct LayoutConfig: DefaultableConfigType {
         public static let defaultValue = LayoutConfig()
         
+        public var itemHeight: CGFloat
         public var cursorCornerRadius: CGFloat
         public var cursorHeightMultiplier: CGFloat
         public var cursorWidth: CGFloat
-        
         public var cornerRadius: CGFloat
         
         public var contentLabelEdgeInsets: UIEdgeInsets
         
         public init(
+            itemHeight: CGFloat = 50,
             cursorCornerRadius: CGFloat = 0.5,
             cursorHeightMultiplier: CGFloat = 0.7,
             cursorWidth: CGFloat = 1,
             cornerRadius: CGFloat = 8,
             contentLabelEdgeInsets: UIEdgeInsets = UIEdgeInsets(top: 2, left: 2, bottom: 2, right: 2)
         ) {
+            self.itemHeight = itemHeight
             self.cursorCornerRadius = cursorCornerRadius
             self.cursorHeightMultiplier = cursorHeightMultiplier
             self.cursorWidth = cursorWidth
@@ -205,6 +207,10 @@ public final class OneTimeItemView: OneTimeCodeItemView {
             updateConfigDependentAppearance()
             updateViewStateDependentAppearance()
         }
+    }
+    
+    public override var intrinsicContentSize: CGSize {
+        CGSize(width: UIView.noIntrinsicMetric, height: layoutConfig.itemHeight)
     }
     
     // MARK: - Properties(private)
