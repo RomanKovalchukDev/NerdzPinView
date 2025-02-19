@@ -1,5 +1,5 @@
 //
-//  BorderedItemInputView.swift
+//  BorderedItemView.swift
 //  PinViewDemo
 //
 //  Created by Roman Kovalchuk on 19.11.2024.
@@ -7,12 +7,12 @@
 
 import UIKit
 
-public final class BorderedItemInputView: PinTapableView, PinCodeItemViewType, PinCodeItemLayoutConfigurable, PinCodeItemAppearanceConfigurable {
+public final class BorderedItemView: PinTapableView, PinCodeItemViewType, ItemViewLayoutConfigurable, ItemViewAppearanceConfigurable {
     
     // MARK: - Internal types
     
     public struct LayoutConfig: DefaultableConfigType {
-        public static let defaultValue: BorderedItemInputView.LayoutConfig = LayoutConfig()
+        public static let defaultValue: LayoutConfig = LayoutConfig()
         
         public var cursorCornerRadius: CGFloat
         public var cursorHeightMultiplier: CGFloat

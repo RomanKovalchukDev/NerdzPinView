@@ -32,8 +32,8 @@ public struct NerdzBorderedPinView: UIViewRepresentable {
     public var textContentType: UITextContentType!
 
     private let config: ViewConfig
-    private let itemsLayutConfig: BorderedItemInputView.LayoutConfig
-    private let itemsAppearanceConfig: BorderedItemInputView.AppearanceConfig
+    private let itemsLayutConfig: BorderedItemView.LayoutConfig
+    private let itemsAppearanceConfig: BorderedItemView.AppearanceConfig
     
     public init(
         text: Binding<String>,
@@ -53,8 +53,8 @@ public struct NerdzBorderedPinView: UIViewRepresentable {
         isSecureTextEntry: Bool = false,
         textContentType: UITextContentType! = .oneTimeCode,
         config: ViewConfig = .init(),
-        itemsLayutConfig: BorderedItemInputView.LayoutConfig = .defaultValue,
-        itemsAppearanceConfig: BorderedItemInputView.AppearanceConfig = .defaultValue
+        itemsLayutConfig: BorderedItemView.LayoutConfig = .defaultValue,
+        itemsAppearanceConfig: BorderedItemView.AppearanceConfig = .defaultValue
     ) {
         self._text = text
         self._viewState = viewState

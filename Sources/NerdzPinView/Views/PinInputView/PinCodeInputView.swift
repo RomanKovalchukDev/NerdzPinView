@@ -7,8 +7,10 @@
 
 import UIKit
 
+public typealias PinCodeItemView = UIView & PinCodeItemViewType & ItemViewLayoutConfigurable & ItemViewAppearanceConfigurable
+
 @MainActor
-public class PinCodeInputView<T: UIView & PinCodeItemViewType & PinCodeItemLayoutConfigurable & PinCodeItemAppearanceConfigurable>: UIView, UIKeyInput, @preconcurrency UIEditMenuInteractionDelegate {
+public class PinCodeInputView<T: PinCodeItemView>: UIView, UIKeyInput, @preconcurrency UIEditMenuInteractionDelegate {
     
     // MARK: - Internal types
     

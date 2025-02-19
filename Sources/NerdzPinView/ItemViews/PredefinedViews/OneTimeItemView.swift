@@ -1,32 +1,32 @@
 //
-//  UnserscoreItemInputview.swift
-//  PinViewDemo
+//  OneTimeItemView.swift
+//  NerdzPinView
 //
-//  Created by Roman Kovalchuk on 20.11.2024.
+//  Created by Roman Kovalchuk on 19.02.2025.
 //
 
 import UIKit
 
-public final class UnderlineItemInputView: PinTapableView, PinCodeItemViewType, PinCodeItemLayoutConfigurable, PinCodeItemAppearanceConfigurable {
+public final class OneTimeItemView: OneTimeCodeItemView {
     
     // MARK: - Internal types
     
     public struct LayoutConfig: DefaultableConfigType {
-        public static var defaultValue: LayoutConfig = LayoutConfig()
+        public static let defaultValue = LayoutConfig()
         
         public var cursorCornerRadius: CGFloat
         public var cursorHeightMultiplier: CGFloat
         public var cursorWidth: CGFloat
         
         public var cornerRadius: CGFloat
+        
         public var contentLabelEdgeInsets: UIEdgeInsets
         
         public init(
             cursorCornerRadius: CGFloat = 0.5,
             cursorHeightMultiplier: CGFloat = 0.7,
             cursorWidth: CGFloat = 1,
-            cornerRadius: CGFloat = 0,
-            underlineHeight: CGFloat = 2,
+            cornerRadius: CGFloat = 8,
             contentLabelEdgeInsets: UIEdgeInsets = UIEdgeInsets(top: 2, left: 2, bottom: 2, right: 2)
         ) {
             self.cursorCornerRadius = cursorCornerRadius
@@ -51,13 +51,13 @@ public final class UnderlineItemInputView: PinTapableView, PinCodeItemViewType, 
         public var activeValueColor: UIColor?
         public var errorValueColor: UIColor?
         
-        public var defaultUnderlineColor: UIColor
-        public var activeUnderlineColor: UIColor?
-        public var errorUnderlineColor: UIColor?
+        public var defaultBorderColor: UIColor
+        public var activeBorderColor: UIColor?
+        public var errorBorderColor: UIColor?
         
-        public var defaultUnderlineHeight: CGFloat
-        public var activeUnderlineHeight: CGFloat?
-        public var errorUnderlineHeight: CGFloat?
+        public var defaultBorderWidth: CGFloat
+        public var activeBorderWidth: CGFloat?
+        public var errorBorderWidth: CGFloat?
         
         public var placeholderColor: UIColor
         public var cursorColor: UIColor
@@ -66,20 +66,20 @@ public final class UnderlineItemInputView: PinTapableView, PinCodeItemViewType, 
         // MARK: - Life cycle
         
         public init(
-            defaultBackgroundColor: UIColor = .clear,
+            defaultBackgroundColor: UIColor = .white,
             activeBackgroundColor: UIColor? = nil,
             errorBackgroundColor: UIColor? = nil,
             defaultValueColor: UIColor = .black,
             activeValueColor: UIColor? = nil,
             errorValueColor: UIColor? = nil,
-            defaultUnderlineColor: UIColor = .gray,
-            activeUnderlineColor: UIColor? = .blue,
-            errorUnderlineColor: UIColor? = nil,
-            defaultUnderlineHeight: CGFloat = 2,
-            activeUnderlineHeight: CGFloat? = nil,
-            errorUnderlineHeight: CGFloat? = nil,
-            placeholderColor: UIColor = .gray,
-            cursorColor: UIColor = .blue,
+            placeholderColor: UIColor = .lightGray,
+            defaultBorderColor: UIColor = .lightGray,
+            activeBorderColor: UIColor? = .blue,
+            errorBorderColor: UIColor? = .red,
+            defaultBorderWidth: CGFloat = 1,
+            activeBorderWidth: CGFloat? = nil,
+            errorBorderWidth: CGFloat? = nil,
+            cursorColor: UIColor = .red,
             font: UIFont = .systemFont(ofSize: 14)
         ) {
             self.defaultBackgroundColor = defaultBackgroundColor
@@ -88,13 +88,13 @@ public final class UnderlineItemInputView: PinTapableView, PinCodeItemViewType, 
             self.defaultValueColor = defaultValueColor
             self.activeValueColor = activeValueColor
             self.errorValueColor = errorValueColor
-            self.defaultUnderlineColor = defaultUnderlineColor
-            self.activeUnderlineColor = activeUnderlineColor
-            self.errorUnderlineColor = errorUnderlineColor
-            self.defaultUnderlineHeight = defaultUnderlineHeight
-            self.activeUnderlineHeight = activeUnderlineHeight
-            self.errorUnderlineHeight = errorUnderlineHeight
             self.placeholderColor = placeholderColor
+            self.defaultBorderColor = defaultBorderColor
+            self.activeBorderColor = activeBorderColor
+            self.errorBorderColor = errorBorderColor
+            self.defaultBorderWidth = defaultBorderWidth
+            self.activeBorderWidth = activeBorderWidth
+            self.errorBorderWidth = errorBorderWidth
             self.cursorColor = cursorColor
             self.font = font
         }
@@ -117,35 +117,35 @@ public final class UnderlineItemInputView: PinTapableView, PinCodeItemViewType, 
             }
         }
         
-        func getUnderlineColor(for state: PinCodeItemViewState) -> UIColor {
+        func getBorderColor(for state: PinCodeItemViewState) -> UIColor {
             switch state {
             case .disabled:
-                return defaultUnderlineColor
+                return defaultBorderColor
                 
             case .active:
-                return activeUnderlineColor ?? defaultUnderlineColor
+                return activeBorderColor ?? defaultBorderColor
                 
             case .normal:
-                return defaultUnderlineColor
+                return defaultBorderColor
                 
             case .error:
-                return errorUnderlineColor ?? defaultUnderlineColor
+                return errorBorderColor ?? defaultBorderColor
             }
         }
         
-        func getUnderlineHeight(for state: PinCodeItemViewState) -> CGFloat {
+        func getBorderWidth(for state: PinCodeItemViewState) -> CGFloat {
             switch state {
             case .disabled:
-                return defaultUnderlineHeight
+                return defaultBorderWidth
                 
             case .active:
-                return activeUnderlineHeight ?? defaultUnderlineHeight
+                return activeBorderWidth ?? defaultBorderWidth
                 
             case .normal:
-                return defaultUnderlineHeight
+                return defaultBorderWidth
                 
             case .error:
-                return errorUnderlineHeight ?? defaultUnderlineHeight
+                return errorBorderWidth ?? defaultBorderWidth
             }
         }
         
@@ -168,6 +168,10 @@ public final class UnderlineItemInputView: PinTapableView, PinCodeItemViewType, 
     
     // MARK: - Properties(public)
     
+    public var caretRect: CGRect {
+        cursorView.bounds
+    }
+    
     public var viewState: PinCodeItemViewState = .normal {
         didSet {
             updateCursorPlaceholderVisibility()
@@ -177,6 +181,8 @@ public final class UnderlineItemInputView: PinTapableView, PinCodeItemViewType, 
     
     public var valueCharacter: Character? {
         didSet {
+            contentLabel.text = valueCharacter.map({ String($0 )})
+            
             updateCursorPlaceholderVisibility()
         }
     }
@@ -186,10 +192,6 @@ public final class UnderlineItemInputView: PinTapableView, PinCodeItemViewType, 
             placeholderLabel.text = placeholderCharacter.flatMap({ $0 }).map({ String($0) })
         }
     }
-    
-    public var secureTextCharacter: Character?
-    public var shouldSecureText: Bool = false
-    public var secureTextDelay: TimeInterval = 2
     
     public var layoutConfig: LayoutConfig = LayoutConfig.defaultValue {
         didSet {
@@ -207,22 +209,15 @@ public final class UnderlineItemInputView: PinTapableView, PinCodeItemViewType, 
     
     // MARK: - Properties(private)
     
-    private var underlineViewHeightConstraint: NSLayoutConstraint?
-    
-    private lazy var underlineView: UIView = {
-        let view = UIView()
-        return view
-    }()
-    
     private lazy var cursorView: UIView = {
         let view = UIView()
         return view
     }()
     
     private lazy var contentLabel: UILabel = {
-        let view = UILabel()
-        view.textAlignment = .center
-        return view
+        let label = UILabel()
+        label.textAlignment = .center
+        return label
     }()
     
     private lazy var placeholderLabel: UILabel = {
@@ -233,7 +228,7 @@ public final class UnderlineItemInputView: PinTapableView, PinCodeItemViewType, 
     
     // MARK: - Life cycle
     
-    public override init(frame: CGRect) {
+    override init(frame: CGRect) {
         super.init(frame: frame)
         
         configureView()
@@ -243,7 +238,7 @@ public final class UnderlineItemInputView: PinTapableView, PinCodeItemViewType, 
         updateViewStateDependentAppearance()
     }
     
-    public required init?(coder: NSCoder) {
+    required init?(coder: NSCoder) {
         super.init(coder: coder)
         
         configureView()
@@ -251,33 +246,6 @@ public final class UnderlineItemInputView: PinTapableView, PinCodeItemViewType, 
         updateCursorPlaceholderVisibility()
         updateConfigDependentAppearance()
         updateViewStateDependentAppearance()
-    }
-    
-    // MARK: - Methods(public)
-    
-    // Animated - is only for secure value animation
-    public func setCharacter(_ character: Character?, animated: Bool) {
-        self.valueCharacter = character
-        self.updateCursorPlaceholderVisibility()
-        
-        if shouldSecureText {
-            if animated {
-                contentLabel.text = valueCharacter.flatMap({ $0 }).map({ String($0) })
-                DispatchQueue.main.asyncAfter(deadline: .now() + secureTextDelay) { [weak self] in
-                    guard self?.valueCharacter != nil else {
-                        return
-                    }
-                    
-                    self?.contentLabel.text = self?.secureTextCharacter.flatMap({ $0 }).map({ String($0) })
-                }
-            }
-            else {
-                contentLabel.text = secureTextCharacter.flatMap({ $0 }).map({ String($0) })
-            }
-        }
-        else {
-            contentLabel.text = valueCharacter.flatMap({ $0 }).map({ String($0) })
-        }
     }
     
     // MARK: - Methods(private)
@@ -329,8 +297,8 @@ public final class UnderlineItemInputView: PinTapableView, PinCodeItemViewType, 
     
     private func updateViewStateDependentAppearance() {
         backgroundColor = appearanceConfig.getBackgroundColor(for: viewState)
-        underlineViewHeightConstraint?.constant = appearanceConfig.getUnderlineHeight(for: viewState)
-        underlineView.backgroundColor = appearanceConfig.getUnderlineColor(for: viewState)
+        layer.borderColor = appearanceConfig.getBorderColor(for: viewState).cgColor
+        layer.borderWidth = appearanceConfig.getBorderWidth(for: viewState)
         contentLabel.textColor = appearanceConfig.getTextColor(for: viewState)
     }
     
@@ -338,20 +306,17 @@ public final class UnderlineItemInputView: PinTapableView, PinCodeItemViewType, 
     private func resetConstants() {
         NSLayoutConstraint.deactivate(cursorView.constraints)
         NSLayoutConstraint.deactivate(contentLabel.constraints)
-        NSLayoutConstraint.deactivate(underlineView.constraints)
         NSLayoutConstraint.deactivate(placeholderLabel.constraints)
-
-        underlineViewHeightConstraint = nil
     }
     
     // Main view configuration function, configuring whole view corner radius, layout etc
     private func configureView() {
-        clipsToBounds = true
         layer.cornerRadius = layoutConfig.cornerRadius
         cursorView.layer.cornerRadius = layoutConfig.cursorCornerRadius
         
         addSubview(cursorView)
         cursorView.translatesAutoresizingMaskIntoConstraints = false
+        
         NSLayoutConstraint.activate([
             cursorView.widthAnchor.constraint(equalToConstant: layoutConfig.cursorWidth),
             cursorView.heightAnchor.constraint(equalTo: heightAnchor, multiplier: layoutConfig.cursorHeightMultiplier),
@@ -359,22 +324,13 @@ public final class UnderlineItemInputView: PinTapableView, PinCodeItemViewType, 
             cursorView.centerYAnchor.constraint(equalTo: centerYAnchor)
         ])
         
-        addSubview(underlineView)
-        underlineView.translatesAutoresizingMaskIntoConstraints = false
-        NSLayoutConstraint.activate([
-            underlineView.bottomAnchor.constraint(equalTo: bottomAnchor),
-            underlineView.leadingAnchor.constraint(equalTo: leadingAnchor),
-            underlineView.trailingAnchor.constraint(equalTo: trailingAnchor),
-            underlineView.heightAnchor.constraint(equalToConstant: appearanceConfig.getUnderlineHeight(for: viewState))
-        ])
-        
         addSubview(contentLabel)
         contentLabel.translatesAutoresizingMaskIntoConstraints = false
         NSLayoutConstraint.activate([
             contentLabel.topAnchor.constraint(equalTo: topAnchor, constant: layoutConfig.contentLabelEdgeInsets.top),
+            contentLabel.bottomAnchor.constraint(equalTo: bottomAnchor, constant: -layoutConfig.contentLabelEdgeInsets.bottom),
             contentLabel.leadingAnchor.constraint(equalTo: leadingAnchor, constant: layoutConfig.contentLabelEdgeInsets.left),
-            contentLabel.trailingAnchor.constraint(equalTo: trailingAnchor, constant: -layoutConfig.contentLabelEdgeInsets.right),
-            contentLabel.bottomAnchor.constraint(equalTo: underlineView.topAnchor, constant: layoutConfig.contentLabelEdgeInsets.bottom)
+            contentLabel.trailingAnchor.constraint(equalTo: trailingAnchor, constant: -layoutConfig.contentLabelEdgeInsets.right)
         ])
         
         addSubview(placeholderLabel)

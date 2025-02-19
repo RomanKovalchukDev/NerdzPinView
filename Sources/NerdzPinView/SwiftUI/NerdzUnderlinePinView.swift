@@ -32,8 +32,8 @@ public struct NerdzUnderlinePinView: UIViewRepresentable {
     public var textContentType: UITextContentType!
     
     private let config: DesignableUnderlinedPinInputView.PinViewType.PinViewConfig
-    private let itemsLayutConfig: UnderlineItemInputView.LayoutConfig
-    private let itemsAppearanceConfig: UnderlineItemInputView.AppearanceConfig
+    private let itemsLayutConfig: UnderlineItemView.LayoutConfig
+    private let itemsAppearanceConfig: UnderlineItemView.AppearanceConfig
     
     public init(
         text: Binding<String>,
@@ -53,8 +53,8 @@ public struct NerdzUnderlinePinView: UIViewRepresentable {
         isSecureTextEntry: Bool = false,
         textContentType: UITextContentType! = .oneTimeCode,
         config: ViewConfig = .init(),
-        itemsLayutConfig: UnderlineItemInputView.LayoutConfig = .defaultValue,
-        itemsAppearanceConfig: UnderlineItemInputView.AppearanceConfig = .defaultValue
+        itemsLayutConfig: UnderlineItemView.LayoutConfig = .defaultValue,
+        itemsAppearanceConfig: UnderlineItemView.AppearanceConfig = .defaultValue
     ) {
         self._text = text
         self._viewState = viewState

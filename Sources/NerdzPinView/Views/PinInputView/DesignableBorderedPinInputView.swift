@@ -12,7 +12,7 @@ open class DesignableBorderedPinInputView: UIView {
     
     // MARK: - Aliases
     
-    public typealias PinViewType = PinCodeInputView<BorderedItemInputView>
+    public typealias PinViewType = PinCodeInputView<BorderedItemView>
     
     // MARK: - Internal types
 
@@ -36,8 +36,8 @@ open class DesignableBorderedPinInputView: UIView {
     open var pinView: PinViewType = {
         let view = PinViewType()
         view.config = PinViewType.PinViewConfig(pinLength: 6, isContentCentered: false)
-        view.layoutConfig = BorderedItemInputView.LayoutConfig(cornerRadius: .zero)
-        view.appearanceConfig = BorderedItemInputView.AppearanceConfig(
+        view.layoutConfig = BorderedItemView.LayoutConfig(cornerRadius: .zero)
+        view.appearanceConfig = BorderedItemView.AppearanceConfig(
             defaultBackgroundColor: Constants.PinView.backgroundColor,
             activeBackgroundColor: Constants.PinView.activeBackgroundColor,
             errorBackgroundColor: Constants.PinView.errorBackgoroundColor,
@@ -114,7 +114,7 @@ open class DesignableBorderedPinInputView: UIView {
         }
     }
     
-    open var layoutConfig: BorderedItemInputView.LayoutConfig {
+    open var layoutConfig: BorderedItemView.LayoutConfig {
         get {
             pinView.layoutConfig
         }
@@ -124,7 +124,7 @@ open class DesignableBorderedPinInputView: UIView {
         }
     }
     
-    open var appearanceConfig: BorderedItemInputView.AppearanceConfig {
+    open var appearanceConfig: BorderedItemView.AppearanceConfig {
         get {
             pinView.appearanceConfig
         }
@@ -325,17 +325,6 @@ open class DesignableBorderedPinInputView: UIView {
     }
     
     open func initialConfiguration() {
-        addSubview(pinView)
-        
-        // Make sure the view’s translatesAutoresizingMaskIntoConstraints is set to false
-        pinView.translatesAutoresizingMaskIntoConstraints = false
-
-        // Pin all edges of the `pinView` to the superview's edges
-        NSLayoutConstraint.activate([
-            pinView.topAnchor.constraint(equalTo: self.topAnchor),
-            pinView.bottomAnchor.constraint(equalTo: self.bottomAnchor),
-            pinView.leadingAnchor.constraint(equalTo: self.leadingAnchor),
-            pinView.trailingAnchor.constraint(equalTo: self.trailingAnchor)
-        ])
+        addAndFillSubview(pinView, directionalLayoutMargins: .zero)
     }
 }

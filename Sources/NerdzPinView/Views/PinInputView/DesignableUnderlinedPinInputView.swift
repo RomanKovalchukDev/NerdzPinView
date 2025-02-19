@@ -12,7 +12,7 @@ open class DesignableUnderlinedPinInputView: UIView, UIKeyInput, @preconcurrency
     
     // MARK: - Aliases
     
-    public typealias PinViewType = PinCodeInputView<UnderlineItemInputView>
+    public typealias PinViewType = PinCodeInputView<UnderlineItemView>
     
     // MARK: - Internal types
     
@@ -36,8 +36,8 @@ open class DesignableUnderlinedPinInputView: UIView, UIKeyInput, @preconcurrency
     open var pinView: PinViewType = {
         let view = PinViewType()
         view.config = PinViewType.PinViewConfig(pinLength: 6, isContentCentered: false)
-        view.layoutConfig = UnderlineItemInputView.LayoutConfig(cornerRadius: .zero)
-        view.appearanceConfig = UnderlineItemInputView.AppearanceConfig(
+        view.layoutConfig = UnderlineItemView.LayoutConfig(cornerRadius: .zero)
+        view.appearanceConfig = UnderlineItemView.AppearanceConfig(
             defaultBackgroundColor: Constants.PinView.backgroundColor,
             activeBackgroundColor: Constants.PinView.activeBackgroundColor,
             errorBackgroundColor: Constants.PinView.errorBackgoroundColor,
@@ -114,7 +114,7 @@ open class DesignableUnderlinedPinInputView: UIView, UIKeyInput, @preconcurrency
         }
     }
     
-    open var layoutConfig: UnderlineItemInputView.LayoutConfig {
+    open var layoutConfig: UnderlineItemView.LayoutConfig {
         get {
             pinView.layoutConfig
         }
@@ -124,7 +124,7 @@ open class DesignableUnderlinedPinInputView: UIView, UIKeyInput, @preconcurrency
         }
     }
     
-    open var appearanceConfig: UnderlineItemInputView.AppearanceConfig {
+    open var appearanceConfig: UnderlineItemView.AppearanceConfig {
         get {
             pinView.appearanceConfig
         }
@@ -325,17 +325,6 @@ open class DesignableUnderlinedPinInputView: UIView, UIKeyInput, @preconcurrency
     }
     
     open func initialConfiguration() {
-        addSubview(pinView)
-        
-        // Make sure the view’s translatesAutoresizingMaskIntoConstraints is set to false
-        pinView.translatesAutoresizingMaskIntoConstraints = false
-
-        // Pin all edges of the `pinView` to the superview's edges
-        NSLayoutConstraint.activate([
-            pinView.topAnchor.constraint(equalTo: self.topAnchor),
-            pinView.bottomAnchor.constraint(equalTo: self.bottomAnchor),
-            pinView.leadingAnchor.constraint(equalTo: self.leadingAnchor),
-            pinView.trailingAnchor.constraint(equalTo: self.trailingAnchor)
-        ])
+        addAndFillSubview(pinView, directionalLayoutMargins: .zero)
     }
 }
