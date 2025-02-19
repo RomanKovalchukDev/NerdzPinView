@@ -47,6 +47,7 @@ final class ViewController: UIViewController {
     
     @IBOutlet private var oneTimeCodeInputView: DesignableOneTimeCodeInputView! {
         didSet {
+            oneTimeCodeInputView.layoutConfig.cornerRadius = 8
             oneTimeCodeInputView.onPinViewEnteredFully = {
                 debugPrint("OTP entered fully: \($0)")
             }

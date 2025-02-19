@@ -452,6 +452,8 @@ public class OneTimeCodeInputView<T: OneTimeCodeItemView>: UIView, UITextInput, 
             return view
         }
         
+        subviews.forEach({ $0.removeFromSuperview() })
+        
         let stackView = UIStackView(arrangedSubviews: arrangedItemViews())
         stackView.spacing = config.shouldGroupNumbers ? config.groupSpacing : config.itemSpacing
         stackView.alignment = .center
