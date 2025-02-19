@@ -35,7 +35,7 @@ open class DesignableUnderlinedPinInputView: UIView, UIKeyInput, @preconcurrency
     
     open var pinView: PinViewType = {
         let view = PinViewType()
-        view.config = PinViewConfig(pinLength: 6, isContentCentered: false)
+        view.config = PinViewType.PinViewConfig(pinLength: 6, isContentCentered: false)
         view.layoutConfig = UnderlineItemInputView.LayoutConfig(cornerRadius: .zero)
         view.appearanceConfig = UnderlineItemInputView.AppearanceConfig(
             defaultBackgroundColor: Constants.PinView.backgroundColor,
@@ -94,7 +94,7 @@ open class DesignableUnderlinedPinInputView: UIView, UIKeyInput, @preconcurrency
         pinView.text
     }
     
-    open var config: PinViewConfig {
+    open var config: PinViewType.PinViewConfig {
         get {
             pinView.config
         }

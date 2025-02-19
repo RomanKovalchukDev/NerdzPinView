@@ -8,7 +8,7 @@
 import UIKit
 
 @MainActor
-open class PinCodeInputView<T: UIView & PinCodeItemViewType & PinCodeItemLayoutConfigurable & PinCodeItemAppearanceConfigurable>: UIView, UIKeyInput, @preconcurrency UIEditMenuInteractionDelegate {
+public class PinCodeInputView<T: UIView & PinCodeItemViewType & PinCodeItemLayoutConfigurable & PinCodeItemAppearanceConfigurable>: UIView, UIKeyInput, @preconcurrency UIEditMenuInteractionDelegate {
     
     // MARK: - Internal types
     
@@ -16,6 +16,51 @@ open class PinCodeInputView<T: UIView & PinCodeItemViewType & PinCodeItemLayoutC
         case disabled
         case normal
         case error
+    }
+    
+    public struct PinViewConfig {
+        public var pinLength: Int
+        public var placeholderCharacter: Character?
+        
+        public var secureTextDelay: TimeInterval
+        public var secureTextCharacter: Character
+        
+        public var pasteActionTitle: String
+        public var pasteGestureMinDuration: TimeInterval
+        
+        // If content is centered - stack view would take located in center of the view / otherwise would be stretched
+        public var isContentCentered: Bool
+        public var containerSpacing: CGFloat
+        
+        public var shouldMoveToPreviousOnDelete: Bool
+        public var shouldResignFirstResponderOnEnd: Bool
+        public var shouldResignFirstResponderOnReturn: Bool
+        
+        public init(
+            pinLength: Int = 5,
+            placeholderCharacter: Character? = nil,
+            secureTextCharacter: Character = "*",
+            secureTextDelay: TimeInterval = 0.8,
+            pasteActionTitle: String = "Paste",
+            pasteGestureMinDuration: TimeInterval = 0.2,
+            isContentCentered: Bool = true,
+            containerSpacing: CGFloat = 10,
+            shouldMoveToPreviousOnDelete: Bool = true,
+            shouldResignFirstResponderOnEnd: Bool = true,
+            shouldResignFirstResponderOnReturn: Bool = false
+        ) {
+            self.pinLength = pinLength
+            self.placeholderCharacter = placeholderCharacter
+            self.secureTextCharacter = secureTextCharacter
+            self.secureTextDelay = secureTextDelay
+            self.pasteActionTitle = pasteActionTitle
+            self.pasteGestureMinDuration = pasteGestureMinDuration
+            self.isContentCentered = isContentCentered
+            self.containerSpacing = containerSpacing
+            self.shouldMoveToPreviousOnDelete = shouldMoveToPreviousOnDelete
+            self.shouldResignFirstResponderOnEnd = shouldResignFirstResponderOnEnd
+            self.shouldResignFirstResponderOnReturn = shouldResignFirstResponderOnReturn
+        }
     }
     
     // MARK: - Properties(public)
@@ -32,52 +77,52 @@ open class PinCodeInputView<T: UIView & PinCodeItemViewType & PinCodeItemLayoutC
             .joined()
     }
     
-    open var config: PinViewConfig = PinViewConfig() {
+    public var config: PinViewConfig = PinViewConfig() {
         didSet {
             configureView()
         }
     }
     
-    open var viewState: ViewState = .normal {
+    public var viewState: ViewState = .normal {
         didSet {
             updateSubviewStates()
         }
     }
     
-    open var layoutConfig: T.LayoutConfig = T.LayoutConfig.defaultValue {
+    public var layoutConfig: T.LayoutConfig = T.LayoutConfig.defaultValue {
         didSet {
             itemViews.forEach({ $0.layoutConfig = layoutConfig })
         }
     }
     
-    open var appearanceConfig: T.AppearanceConfig = T.AppearanceConfig.defaultValue {
+    public var appearanceConfig: T.AppearanceConfig = T.AppearanceConfig.defaultValue {
         didSet {
             itemViews.forEach({ $0.appearanceConfig = appearanceConfig })
         }
     }
     
-    open override var canBecomeFirstResponder: Bool {
+    public override var canBecomeFirstResponder: Bool {
         viewState != .disabled
     }
         
     // MARK: - UIKeyInput
     
-    open var hasText: Bool {
+    public var hasText: Bool {
         !text.isEmpty
     }
     
-    open var autocapitalizationType: UITextAutocapitalizationType = .none
-    open var autocorrectionType: UITextAutocorrectionType = .no
-    open var spellCheckingType: UITextSpellCheckingType = .no
-    open var smartQuotesType: UITextSmartQuotesType = .no
-    open var smartDashesType: UITextSmartDashesType = .no
-    open var smartInsertDeleteType: UITextSmartInsertDeleteType = .no
-    open var keyboardType: UIKeyboardType = .numberPad
-    open var keyboardAppearance: UIKeyboardAppearance = .default
-    open var returnKeyType: UIReturnKeyType = .done
-    open var enablesReturnKeyAutomatically: Bool = true
-    open var isSecureTextEntry: Bool = false
-    open var textContentType: UITextContentType! = .oneTimeCode
+    public var autocapitalizationType: UITextAutocapitalizationType = .none
+    public var autocorrectionType: UITextAutocorrectionType = .no
+    public var spellCheckingType: UITextSpellCheckingType = .no
+    public var smartQuotesType: UITextSmartQuotesType = .no
+    public var smartDashesType: UITextSmartDashesType = .no
+    public var smartInsertDeleteType: UITextSmartInsertDeleteType = .no
+    public var keyboardType: UIKeyboardType = .numberPad
+    public var keyboardAppearance: UIKeyboardAppearance = .default
+    public var returnKeyType: UIReturnKeyType = .done
+    public var enablesReturnKeyAutomatically: Bool = true
+    public var isSecureTextEntry: Bool = false
+    public var textContentType: UITextContentType! = .oneTimeCode
     
     // MARK: - Properties(private)
     
@@ -213,23 +258,25 @@ open class PinCodeInputView<T: UIView & PinCodeItemViewType & PinCodeItemLayoutC
     }
     
     open func deleteBackward() {
-        if let activeItemIndex {
-            let oldValue = charactersArray[activeItemIndex]
-            
-            charactersArray[activeItemIndex] = nil
-            itemViews[activeItemIndex].setCharacter(nil, animated: false)
-            
-            if config.shouldMoveToPreviousOnDelete || oldValue == nil {
-                let nextItemIndex = activeItemIndex - 1
-                
-                if nextItemIndex >= 0 {
-                    self.activeItemIndex = nextItemIndex
-                    self.updateSubviewStates()
-                }
-            }
-            
-            onPinValueChanged?(self.text)
+        guard let activeItemIndex else {
+            return
         }
+        
+        let oldValue = charactersArray[activeItemIndex]
+        
+        charactersArray[activeItemIndex] = nil
+        itemViews[activeItemIndex].setCharacter(nil, animated: false)
+        
+        if config.shouldMoveToPreviousOnDelete || oldValue == nil {
+            let nextItemIndex = activeItemIndex - 1
+            
+            if nextItemIndex >= 0 {
+                self.activeItemIndex = nextItemIndex
+                self.updateSubviewStates()
+            }
+        }
+        
+        onPinValueChanged?(self.text)
     }
     
     // MARK: - UIResponder

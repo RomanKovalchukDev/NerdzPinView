@@ -10,8 +10,11 @@ import SwiftUI
 
 public struct NerdzUnderlinePinView: UIViewRepresentable {
     
+    public typealias ViewState = DesignableUnderlinedPinInputView.PinViewType.ViewState
+    public typealias ViewConfig = DesignableUnderlinedPinInputView.PinViewType.PinViewConfig
+    
     @Binding public var text: String
-    @Binding public var viewState: DesignableUnderlinedPinInputView.PinViewType.ViewState
+    @Binding public var viewState: ViewState
     @FocusState.Binding public var isFocused: Bool
     
     public var onPinViewEnteredFully: PinCodeTextAction?
@@ -28,13 +31,13 @@ public struct NerdzUnderlinePinView: UIViewRepresentable {
     public var isSecureTextEntry: Bool
     public var textContentType: UITextContentType!
     
-    private let config: PinViewConfig
+    private let config: DesignableUnderlinedPinInputView.PinViewType.PinViewConfig
     private let itemsLayutConfig: UnderlineItemInputView.LayoutConfig
     private let itemsAppearanceConfig: UnderlineItemInputView.AppearanceConfig
     
     public init(
         text: Binding<String>,
-        viewState: Binding<DesignableUnderlinedPinInputView.PinViewType.ViewState>,
+        viewState: Binding<ViewState>,
         isFocused: FocusState<Bool>.Binding,
         onPinViewEnteredFully: PinCodeTextAction? = nil,
         autocapitalizationType: UITextAutocapitalizationType = .none,
@@ -49,7 +52,7 @@ public struct NerdzUnderlinePinView: UIViewRepresentable {
         enablesReturnKeyAutomatically: Bool = true,
         isSecureTextEntry: Bool = false,
         textContentType: UITextContentType! = .oneTimeCode,
-        config: PinViewConfig = .init(),
+        config: ViewConfig = .init(),
         itemsLayutConfig: UnderlineItemInputView.LayoutConfig = .defaultValue,
         itemsAppearanceConfig: UnderlineItemInputView.AppearanceConfig = .defaultValue
     ) {
