@@ -28,7 +28,7 @@ public class OneTimeCodeInputView<T: OneTimeCodeItemView>: UIView, UITextInput, 
         public var itemSpacing: CGFloat
         public var groupSpacing: CGFloat
         
-        init(
+        public init(
             pinLength: Int = 6,
             placeholderCharacter: Character? = nil,
             pasteActionTitle: String = "Paste",
