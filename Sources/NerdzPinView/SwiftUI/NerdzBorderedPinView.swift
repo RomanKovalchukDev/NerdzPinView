@@ -10,6 +10,9 @@ import SwiftUI
 
 public struct NerdzBorderedPinView: UIViewRepresentable {
     
+    public typealias ViewState = DesignableBorderedPinInputView.PinViewType.ViewState
+    public typealias ViewConfig = DesignableBorderedPinInputView.PinViewType.PinViewConfig
+    
     @Binding public var text: String
     @Binding public var viewState: DesignableBorderedPinInputView.PinViewType.ViewState
     @FocusState.Binding public var isFocused: Bool
@@ -28,13 +31,13 @@ public struct NerdzBorderedPinView: UIViewRepresentable {
     public var isSecureTextEntry: Bool
     public var textContentType: UITextContentType!
 
-    private let config: PinViewConfig
-    private let itemsLayutConfig: BorderedItemInputView.LayoutConfig
-    private let itemsAppearanceConfig: BorderedItemInputView.AppearanceConfig
+    private let config: ViewConfig
+    private let itemsLayutConfig: BorderedItemView.LayoutConfig
+    private let itemsAppearanceConfig: BorderedItemView.AppearanceConfig
     
     public init(
         text: Binding<String>,
-        viewState: Binding<DesignableBorderedPinInputView.PinViewType.ViewState>,
+        viewState: Binding<ViewState>,
         isFocused: FocusState<Bool>.Binding,
         onPinViewEnteredFully: PinCodeTextAction? = nil,
         autocapitalizationType: UITextAutocapitalizationType = .none,
@@ -49,9 +52,9 @@ public struct NerdzBorderedPinView: UIViewRepresentable {
         enablesReturnKeyAutomatically: Bool = true,
         isSecureTextEntry: Bool = false,
         textContentType: UITextContentType! = .oneTimeCode,
-        config: PinViewConfig = .init(),
-        itemsLayutConfig: BorderedItemInputView.LayoutConfig = .defaultValue,
-        itemsAppearanceConfig: BorderedItemInputView.AppearanceConfig = .defaultValue
+        config: ViewConfig = .init(),
+        itemsLayutConfig: BorderedItemView.LayoutConfig = .defaultValue,
+        itemsAppearanceConfig: BorderedItemView.AppearanceConfig = .defaultValue
     ) {
         self._text = text
         self._viewState = viewState

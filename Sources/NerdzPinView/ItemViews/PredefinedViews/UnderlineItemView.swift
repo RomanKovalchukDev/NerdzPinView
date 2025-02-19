@@ -1,13 +1,13 @@
 //
-//  UnserscoreItemInputview.swift
-//  PinViewDemo
+//  UnderlineItemView.swift
+//  NerdzPinView
 //
-//  Created by Roman Kovalchuk on 20.11.2024.
+//  Created by Roman Kovalchuk on 19.02.2025.
 //
 
 import UIKit
 
-public final class UnderlineItemInputView: PinTapableView, PinCodeItemViewType, PinCodeItemLayoutConfigurable, PinCodeItemAppearanceConfigurable {
+public final class UnderlineItemView: PinTapableView, PinCodeItemViewType, ItemViewLayoutConfigurable, ItemViewAppearanceConfigurable {
     
     // MARK: - Internal types
     
