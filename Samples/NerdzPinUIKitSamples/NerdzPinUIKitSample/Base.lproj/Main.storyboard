@@ -17,7 +17,7 @@
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
                             <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" spacing="12" translatesAutoresizingMaskIntoConstraints="NO" id="bPW-wa-66j">
-                                <rect key="frame" x="20" y="359" width="353" height="159"/>
+                                <rect key="frame" x="20" y="79" width="353" height="159"/>
                                 <subviews>
                                     <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="6Fm-Vl-ZUF" customClass="DesignableBorderedPinInputView" customModule="NerdzPinView">
                                         <rect key="frame" x="0.0" y="0.0" width="353" height="45"/>
@@ -33,7 +33,7 @@
                                             <constraint firstAttribute="height" constant="45" id="gSz-c8-slj"/>
                                         </constraints>
                                     </view>
-                                    <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="g12-OK-32N">
+                                    <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="g12-OK-32N" customClass="DesignableOneTimeCodeInputView" customModule="NerdzPinView">
                                         <rect key="frame" x="0.0" y="114" width="353" height="45"/>
                                         <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                         <constraints>
@@ -47,13 +47,13 @@
                         <color key="backgroundColor" systemColor="systemBackgroundColor"/>
                         <constraints>
                             <constraint firstItem="bPW-wa-66j" firstAttribute="leading" secondItem="6Tk-OE-BBY" secondAttribute="leading" constant="20" id="3G1-Jm-cuV"/>
-                            <constraint firstItem="bPW-wa-66j" firstAttribute="centerY" secondItem="6Tk-OE-BBY" secondAttribute="centerY" id="kax-cd-buU"/>
+                            <constraint firstItem="bPW-wa-66j" firstAttribute="top" secondItem="6Tk-OE-BBY" secondAttribute="top" constant="20" id="7Pi-MK-zuG"/>
                             <constraint firstItem="6Tk-OE-BBY" firstAttribute="trailing" secondItem="bPW-wa-66j" secondAttribute="trailing" constant="20" id="oRF-LJ-NDS"/>
                         </constraints>
                     </view>
                     <connections>
                         <outlet property="borderedPinCodeView" destination="6Fm-Vl-ZUF" id="PzH-tn-EZN"/>
-                        <outlet property="fromCodeContainerView" destination="g12-OK-32N" id="99f-b3-6fj"/>
+                        <outlet property="oneTimeCodeInputView" destination="g12-OK-32N" id="dgY-bY-3Tf"/>
                         <outlet property="underlinedPinCodeView" destination="v8c-hz-yvb" id="Hlx-65-oVR"/>
                     </connections>
                 </viewController>

@@ -289,6 +289,10 @@ public class OneTimeCodeInputView<T: OneTimeCodeItemView>: UIView, UITextInput, 
     public var returnKeyType: UIReturnKeyType = .done
     public var textContentType: UITextContentType! = .oneTimeCode
     
+    public override var intrinsicContentSize: CGSize {
+        CGSize(width: UIView.noIntrinsicMetric, height: 50)
+    }
+    
     // MARK: - Properties(private)
         
     private var itemViews: [T] = []
@@ -453,7 +457,7 @@ public class OneTimeCodeInputView<T: OneTimeCodeItemView>: UIView, UITextInput, 
             view.translatesAutoresizingMaskIntoConstraints = false
             
             NSLayoutConstraint.activate([
-                view.heightAnchor.constraint(equalTo: view.widthAnchor)
+                view.heightAnchor.constraint(equalToConstant: 50)
             ])
             
             return view

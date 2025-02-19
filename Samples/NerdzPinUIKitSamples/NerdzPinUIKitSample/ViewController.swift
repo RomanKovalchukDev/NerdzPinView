@@ -10,10 +10,6 @@ import NerdzPinView
 
 final class ViewController: UIViewController {
     
-    // MARK: - Aliases
-    
-    public typealias PinViewType = PinCodeInputView<BorderedItemInputView>
-    
     // MARK: - Internal types
 
     private enum Constants {
@@ -30,33 +26,18 @@ final class ViewController: UIViewController {
             static let tintColor = UIColor.black
         }
     }
-    
-    // MARK: - Properties(private)
-    
-    private var pinView: PinViewType = {
-        let view = PinViewType()
-        view.config = PinViewConfig(pinLength: 6, isContentCentered: false)
-        view.layoutConfig = BorderedItemInputView.LayoutConfig(cornerRadius: .zero)
-        view.appearanceConfig = BorderedItemInputView.AppearanceConfig(
-            defaultBackgroundColor: Constants.PinView.backgroundColor,
-            activeBackgroundColor: Constants.PinView.activeBackgroundColor,
-            errorBackgroundColor: Constants.PinView.errorBackgoroundColor,
-            defaultValueColor: Constants.PinView.tintColor,
-            activeValueColor: Constants.PinView.activeBorderColor,
-            errorValueColor: Constants.PinView.errorBackgoroundColor,
-            cursorColor: Constants.PinView.tintColor,
-            font: Constants.PinView.font
-        )
-        return view
-    }()
-    
+        
     // MARK: - IBOutlets
     
     // Example of designable bordered pin view
     @IBOutlet private var borderedPinCodeView: DesignableBorderedPinInputView! {
         didSet {
+            borderedPinCodeView.onPinValueChanged = {
+                debugPrint("Pin value changed: \($0)")
+            }
+            
             borderedPinCodeView.onPinViewEnteredFully = {
-                debugPrint($0, "XD")
+                debugPrint("Pin code entered fully: \($0)")
             }
         }
     }
@@ -64,20 +45,11 @@ final class ViewController: UIViewController {
     // Example of designable underline pin input view
     @IBOutlet private var underlinedPinCodeView: DesignableUnderlinedPinInputView!
     
-    // Example of programmatically created view
-    @IBOutlet private var fromCodeContainerView: UIView! {
+    @IBOutlet private var oneTimeCodeInputView: DesignableOneTimeCodeInputView! {
         didSet {
-            fromCodeContainerView.addSubview(pinView)
-            
-            // Make sure the view’s translatesAutoresizingMaskIntoConstraints is set to false
-            pinView.translatesAutoresizingMaskIntoConstraints = false
-            // Pin all edges of the `pinView` to the superview's edges
-            NSLayoutConstraint.activate([
-                pinView.topAnchor.constraint(equalTo: fromCodeContainerView.topAnchor),
-                pinView.bottomAnchor.constraint(equalTo: fromCodeContainerView.bottomAnchor),
-                pinView.leadingAnchor.constraint(equalTo: fromCodeContainerView.leadingAnchor),
-                pinView.trailingAnchor.constraint(equalTo: fromCodeContainerView.trailingAnchor)
-            ])
+            oneTimeCodeInputView.onPinViewEnteredFully = {
+                debugPrint("OTP entered fully: \($0)")
+            }
         }
     }
     
