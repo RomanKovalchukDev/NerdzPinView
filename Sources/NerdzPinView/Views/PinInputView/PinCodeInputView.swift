@@ -20,7 +20,7 @@ public class PinCodeInputView<T: PinCodeItemView>: UIView, UIKeyInput, @preconcu
         case error
     }
     
-    public struct PinViewConfig {
+    public struct PinViewConfig: Equatable {
         public var pinLength: Int
         public var placeholderCharacter: Character?
         
@@ -81,6 +81,7 @@ public class PinCodeInputView<T: PinCodeItemView>: UIView, UIKeyInput, @preconcu
     
     public var config: PinViewConfig = PinViewConfig() {
         didSet {
+            guard oldValue != config else { return }
             configureView()
         }
     }
@@ -130,6 +131,8 @@ public class PinCodeInputView<T: PinCodeItemView>: UIView, UIKeyInput, @preconcu
     
     private var activeItemIndex: Int?
     private var charactersArray: [Character?] = []
+    private var stackAnchorConstraints: [NSLayoutConstraint] = []
+    private var hasConfiguredHierarchy: Bool = false
     
     private var itemViews: [T] {
         containerStackView.arrangedSubviews.compactMap({ $0 as? T })
@@ -350,74 +353,118 @@ public class PinCodeInputView<T: PinCodeItemView>: UIView, UIKeyInput, @preconcu
     private func configureView() {
         initialViewLayout()
         configureSubviews()
-        containerStackView.addInteraction(editMenuInteraction)
-        longPressGestureRecognizer.minimumPressDuration = config.pasteGestureMinDuration
-        containerStackView.addGestureRecognizer(longPressGestureRecognizer)
     }
-    
+
     private func initialViewLayout() {
-        // Disable autoresizing mask translation for Auto Layout
         containerStackView.translatesAutoresizingMaskIntoConstraints = false
 
-        // Remove any existing constraints on containerStackView
-        NSLayoutConstraint.deactivate(containerStackView.constraints)
+        // One-time hierarchy/setup. Re-running addSubview, addInteraction and
+        // addGestureRecognizer on every config change would otherwise stack up
+        // duplicate interactions and recognizers.
+        if !hasConfiguredHierarchy {
+            addSubview(containerStackView)
 
-        addSubview(containerStackView)
-        
-        // Pin containerStackView top and bottom to the view’s edges
-        NSLayoutConstraint.activate([
-            containerStackView.topAnchor.constraint(equalTo: topAnchor),
-            containerStackView.bottomAnchor.constraint(equalTo: bottomAnchor)
-        ])
-        
-        if config.isContentCentered {
-            containerStackView.distribution = .fill
-            containerStackView.spacing = config.containerSpacing
-            
-            // Center horizontally and allow flexible left/right constraints
+            containerStackView.axis = .horizontal
+            // Items are not forced to fill the cross axis — each item sizes itself
+            // via its own constraints (square + capped to the stack height) and is
+            // centered vertically when it has to shrink to fit the available width.
+            containerStackView.alignment = .center
+
+            containerStackView.addInteraction(editMenuInteraction)
+            containerStackView.addGestureRecognizer(longPressGestureRecognizer)
+
             NSLayoutConstraint.activate([
+                containerStackView.topAnchor.constraint(equalTo: topAnchor),
+                containerStackView.bottomAnchor.constraint(equalTo: bottomAnchor)
+            ])
+
+            hasConfiguredHierarchy = true
+        }
+
+        containerStackView.spacing = config.containerSpacing
+        // .equalSpacing in both branches keeps items at their natural square size
+        // and absorbs leftover horizontal space into the inter-item gaps. With
+        // .fill the stack would divide its width across N items, which can force
+        // each item wider than the stack is tall and break the 1:1 constraint.
+        containerStackView.distribution = .equalSpacing
+        longPressGestureRecognizer.minimumPressDuration = config.pasteGestureMinDuration
+
+        // Drop the previously installed horizontal anchors so that switching
+        // between centered / non-centered modes does not leave both sets active.
+        NSLayoutConstraint.deactivate(stackAnchorConstraints)
+        stackAnchorConstraints.removeAll()
+
+        if config.isContentCentered {
+            stackAnchorConstraints = [
                 containerStackView.centerXAnchor.constraint(equalTo: centerXAnchor),
                 containerStackView.leftAnchor.constraint(greaterThanOrEqualTo: leftAnchor),
                 containerStackView.rightAnchor.constraint(lessThanOrEqualTo: rightAnchor)
-            ])
-        } else {
-            containerStackView.distribution = .equalSpacing
-            
-            // Pin left and right to the view’s edges
-            NSLayoutConstraint.activate([
+            ]
+        }
+        else {
+            stackAnchorConstraints = [
                 containerStackView.leftAnchor.constraint(equalTo: leftAnchor),
                 containerStackView.rightAnchor.constraint(equalTo: rightAnchor)
-            ])
+            ]
         }
+
+        NSLayoutConstraint.activate(stackAnchorConstraints)
     }
     
     private func configureSubviews() {
-        containerStackView.arrangedSubviews.forEach({ $0.removeFromSuperview() })
         charactersArray.removeAll()
-        
+        containerStackView.arrangedSubviews.forEach({ $0.removeFromSuperview() })
+
+        var firstItemView: T?
+
         for index in 0..<config.pinLength {
             let view = T()
-                        
+
             view.onViewTapped = { [weak self] in
-                self?.activeItemIndex = index
-                self?.becomeFirstResponder()
+                guard let self else {
+                    return
+                }
+
+                let firstEmpty = self.charactersArray.firstIndex(where: { $0 == nil }) ?? (self.config.pinLength - 1)
+                self.activeItemIndex = min(index, firstEmpty)
+                self.becomeFirstResponder()
             }
-            
+
             view.translatesAutoresizingMaskIntoConstraints = false
 
-            // Add width and height constraints to maintain a 1:1 aspect ratio
-            NSLayoutConstraint.activate([
-                view.heightAnchor.constraint(equalTo: view.widthAnchor)
-            ])
-            
             view.layoutConfig = layoutConfig
             view.appearanceConfig = appearanceConfig
             view.placeholderCharacter = config.placeholderCharacter
             view.secureTextCharacter = config.secureTextCharacter
             view.secureTextDelay = config.secureTextDelay
-                                                
+
             charactersArray.append(nil)
             containerStackView.addArrangedSubview(view)
+
+            // Square aspect, hard cap to stack height, and a high-priority preference
+            // to be exactly stack height. The preference bends when the available width
+            // can't fit N full-height squares, so constraints never become unsatisfiable.
+            let aspect = view.heightAnchor.constraint(equalTo: view.widthAnchor)
+            aspect.priority = .required
+
+            let heightCap = view.heightAnchor.constraint(lessThanOrEqualTo: containerStackView.heightAnchor)
+            heightCap.priority = .required
+
+            let preferredHeight = view.heightAnchor.constraint(equalTo: containerStackView.heightAnchor)
+            preferredHeight.priority = .defaultHigh
+
+            NSLayoutConstraint.activate([aspect, heightCap, preferredHeight])
+
+            // All items share the first item's width — keeps every cell identical
+            // and prevents the stack from handing leftover space to one cell.
+            if let firstItemView, view !== firstItemView {
+                let equalWidth = view.widthAnchor.constraint(equalTo: firstItemView.widthAnchor)
+                equalWidth.priority = .required
+                equalWidth.isActive = true
+            }
+            else {
+                firstItemView = view
+            }
         }
     }
     
