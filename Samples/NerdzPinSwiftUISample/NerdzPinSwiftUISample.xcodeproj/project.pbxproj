@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		3078D6B82FBF3CF000048656 /* NerdzPinView in Frameworks */ = {isa = PBXBuildFile; productRef = 3078D6B72FBF3CF000048656 /* NerdzPinView */; };
 		B07E12B02D1090F000194E64 /* NerdzPinView in Frameworks */ = {isa = PBXBuildFile; productRef = B07E12AF2D1090F000194E64 /* NerdzPinView */; };
 /* End PBXBuildFile section */
 
@@ -28,6 +29,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				B07E12B02D1090F000194E64 /* NerdzPinView in Frameworks */,
+				3078D6B82FBF3CF000048656 /* NerdzPinView in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -71,6 +73,7 @@
 			name = NerdzPinSwiftUISample;
 			packageProductDependencies = (
 				B07E12AF2D1090F000194E64 /* NerdzPinView */,
+				3078D6B72FBF3CF000048656 /* NerdzPinView */,
 			);
 			productName = NerdzPinSwiftUISample;
 			productReference = B07E12942D108EE100194E64 /* NerdzPinSwiftUISample.app */;
@@ -101,7 +104,7 @@
 			mainGroup = B07E128B2D108EE100194E64;
 			minimizedProjectReferenceProxies = 1;
 			packageReferences = (
-				B07E12AE2D1090F000194E64 /* XCLocalSwiftPackageReference "../../NerdzPinView" */,
+				3078D6B62FBF3CF000048656 /* XCLocalSwiftPackageReference "../../../NerdzPinView" */,
 			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = B07E12952D108EE100194E64 /* Products */;
@@ -335,13 +338,17 @@
 /* End XCConfigurationList section */
 
 /* Begin XCLocalSwiftPackageReference section */
-		B07E12AE2D1090F000194E64 /* XCLocalSwiftPackageReference "../../NerdzPinView" */ = {
+		3078D6B62FBF3CF000048656 /* XCLocalSwiftPackageReference "../../../NerdzPinView" */ = {
 			isa = XCLocalSwiftPackageReference;
-			relativePath = ../../NerdzPinView;
+			relativePath = ../../../NerdzPinView;
 		};
 /* End XCLocalSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
+		3078D6B72FBF3CF000048656 /* NerdzPinView */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = NerdzPinView;
+		};
 		B07E12AF2D1090F000194E64 /* NerdzPinView */ = {
 			isa = XCSwiftPackageProductDependency;
 			productName = NerdzPinView;

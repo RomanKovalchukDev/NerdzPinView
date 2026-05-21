@@ -106,6 +106,10 @@ public struct NerdzBorderedPinView: UIViewRepresentable {
     
     private func updateKitView(view: DesignableBorderedPinInputView) {
         view.setText(text)
+        view.viewState = viewState
+        view.config = config
+        view.layoutConfig = itemsLayutConfig
+        view.appearanceConfig = itemsAppearanceConfig
         view.autocapitalizationType = autocapitalizationType
         view.autocorrectionType = autocorrectionType
         view.spellCheckingType = spellCheckingType
