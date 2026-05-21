@@ -32,7 +32,7 @@ public struct NerdzUnderlinePinView: UIViewRepresentable {
     public var textContentType: UITextContentType!
     
     private let config: DesignableUnderlinedPinInputView.PinViewType.PinViewConfig
-    private let itemsLayutConfig: UnderlineItemView.LayoutConfig
+    private let itemsLayoutConfig: UnderlineItemView.LayoutConfig
     private let itemsAppearanceConfig: UnderlineItemView.AppearanceConfig
     
     public init(
@@ -53,7 +53,7 @@ public struct NerdzUnderlinePinView: UIViewRepresentable {
         isSecureTextEntry: Bool = false,
         textContentType: UITextContentType! = .oneTimeCode,
         config: ViewConfig = .init(),
-        itemsLayutConfig: UnderlineItemView.LayoutConfig = .defaultValue,
+        itemsLayoutConfig: UnderlineItemView.LayoutConfig = .defaultValue,
         itemsAppearanceConfig: UnderlineItemView.AppearanceConfig = .defaultValue
     ) {
         self._text = text
@@ -73,7 +73,7 @@ public struct NerdzUnderlinePinView: UIViewRepresentable {
         self.isSecureTextEntry = isSecureTextEntry
         self.textContentType = textContentType
         self.config = config
-        self.itemsLayutConfig = itemsLayutConfig
+        self.itemsLayoutConfig = itemsLayoutConfig
         self.itemsAppearanceConfig = itemsAppearanceConfig
     }
     
@@ -108,7 +108,7 @@ public struct NerdzUnderlinePinView: UIViewRepresentable {
         view.setText(text)
         view.viewState = viewState
         view.config = config
-        view.layoutConfig = itemsLayutConfig
+        view.layoutConfig = itemsLayoutConfig
         view.appearanceConfig = itemsAppearanceConfig
 
         view.autocapitalizationType = autocapitalizationType
