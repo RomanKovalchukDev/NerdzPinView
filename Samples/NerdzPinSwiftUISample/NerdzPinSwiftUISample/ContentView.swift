@@ -31,10 +31,6 @@ struct ContentView: View {
             
             Text("Text for the second field \(text2)")
             
-            NerdzUnderlinePinView(text: $text2)
-                .frame(height: 50)
-                .padding()
-            
             Button(
                 action: {
                     debugPrint(text)
