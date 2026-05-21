@@ -32,7 +32,7 @@ public struct NerdzBorderedPinView: UIViewRepresentable {
     public var textContentType: UITextContentType!
 
     private let config: ViewConfig
-    private let itemsLayutConfig: BorderedItemView.LayoutConfig
+    private let itemsLayoutConfig: BorderedItemView.LayoutConfig
     private let itemsAppearanceConfig: BorderedItemView.AppearanceConfig
     
     public init(
@@ -53,7 +53,7 @@ public struct NerdzBorderedPinView: UIViewRepresentable {
         isSecureTextEntry: Bool = false,
         textContentType: UITextContentType! = .oneTimeCode,
         config: ViewConfig = .init(),
-        itemsLayutConfig: BorderedItemView.LayoutConfig = .defaultValue,
+        itemsLayoutConfig: BorderedItemView.LayoutConfig = .defaultValue,
         itemsAppearanceConfig: BorderedItemView.AppearanceConfig = .defaultValue
     ) {
         self._text = text
@@ -73,7 +73,7 @@ public struct NerdzBorderedPinView: UIViewRepresentable {
         self.isSecureTextEntry = isSecureTextEntry
         self.textContentType = textContentType
         self.config = config
-        self.itemsLayutConfig = itemsLayutConfig
+        self.itemsLayoutConfig = itemsLayoutConfig
         self.itemsAppearanceConfig = itemsAppearanceConfig
     }
     
@@ -106,6 +106,10 @@ public struct NerdzBorderedPinView: UIViewRepresentable {
     
     private func updateKitView(view: DesignableBorderedPinInputView) {
         view.setText(text)
+        view.viewState = viewState
+        view.config = config
+        view.layoutConfig = itemsLayoutConfig
+        view.appearanceConfig = itemsAppearanceConfig
         view.autocapitalizationType = autocapitalizationType
         view.autocorrectionType = autocorrectionType
         view.spellCheckingType = spellCheckingType
