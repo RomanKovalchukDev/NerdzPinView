@@ -1,6 +1,6 @@
 //
 //  BorderedItemView.swift
-//  PinViewDemo
+//  NerdzPinView
 //
 //  Created by Roman Kovalchuk on 19.11.2024.
 //
