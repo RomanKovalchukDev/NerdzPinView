@@ -18,6 +18,10 @@ let package = Package(
         .target(
             name: "NerdzPinView",
             dependencies: []
+        ),
+        .testTarget(
+            name: "NerdzPinViewTests",
+            dependencies: ["NerdzPinView"]
         )
     ]
 )
