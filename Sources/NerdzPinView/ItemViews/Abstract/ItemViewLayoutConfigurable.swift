@@ -1,6 +1,6 @@
 //
 //  ItemViewLayoutConfigurable.swift
-//  PinViewDemo
+//  NerdzPinView
 //
 //  Created by Roman Kovalchuk on 20.11.2024.
 //
