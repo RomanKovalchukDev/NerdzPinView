@@ -123,6 +123,35 @@ struct UnderlineItemViewConfigTests {
             #expect(layout.cornerRadius == 0)
         }
     }
+
+    @MainActor
+    @Suite("Layout config round trip")
+    struct LayoutConfigRoundTripTests {
+
+        // Guards the real stored surface of LayoutConfig. The underline height is
+        // intentionally NOT part of LayoutConfig (it lives in AppearanceConfig via
+        // getUnderlineHeight(for:)), so every initializer argument here must land in
+        // a stored property. This would surface a regression if a non-stored
+        // (dropped) parameter were ever reintroduced.
+        @Test
+        func testInitWhenCustomValuesProvidedShouldStoreEveryProperty() {
+            // Act
+            let layout = UnderlineItemView.LayoutConfig(
+                cursorCornerRadius: TestData.cursorCornerRadius,
+                cursorHeightMultiplier: TestData.cursorHeightMultiplier,
+                cursorWidth: TestData.cursorWidth,
+                cornerRadius: TestData.cornerRadius,
+                contentLabelEdgeInsets: TestData.contentLabelEdgeInsets
+            )
+
+            // Assert
+            #expect(layout.cursorCornerRadius == TestData.cursorCornerRadius)
+            #expect(layout.cursorHeightMultiplier == TestData.cursorHeightMultiplier)
+            #expect(layout.cursorWidth == TestData.cursorWidth)
+            #expect(layout.cornerRadius == TestData.cornerRadius)
+            #expect(layout.contentLabelEdgeInsets == TestData.contentLabelEdgeInsets)
+        }
+    }
 }
 
 @MainActor
@@ -134,6 +163,12 @@ private enum TestData {
     static let defaultHeight: CGFloat = 2
     static let activeHeight: CGFloat = 4
     static let errorHeight: CGFloat = 6
+
+    static let cursorCornerRadius: CGFloat = 1.5
+    static let cursorHeightMultiplier: CGFloat = 0.9
+    static let cursorWidth: CGFloat = 3
+    static let cornerRadius: CGFloat = 5
+    static let contentLabelEdgeInsets = UIEdgeInsets(top: 4, left: 5, bottom: 6, right: 7)
 
     static func configWithOverrides() -> UnderlineItemView.AppearanceConfig {
         UnderlineItemView.AppearanceConfig(
