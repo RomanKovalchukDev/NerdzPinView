@@ -8,6 +8,11 @@
 import UIKit
 
 extension UIView {
+    /// Adds a subview and pins it to the receiver's layout margins guide on every edge.
+    ///
+    /// - Parameters:
+    ///   - view: The subview to add and constrain.
+    ///   - directionalLayoutMargins: The margins applied to the receiver before pinning the subview.
     func addAndFillSubview(_ view: UIView, directionalLayoutMargins: NSDirectionalEdgeInsets) {
         self.directionalLayoutMargins = directionalLayoutMargins
         view.translatesAutoresizingMaskIntoConstraints = false
