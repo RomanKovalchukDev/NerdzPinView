@@ -38,23 +38,20 @@ public final class UnderlineItemView: PinTapableView, PinCodeItemViewType, ItemV
 
         /// Creates a layout configuration.
         ///
-        /// The underline height is driven by the appearance configuration rather
-        /// than by layout, so `underlineHeight` here is accepted for call site
-        /// convenience and is not stored.
+        /// The underline height is driven by the appearance configuration
+        /// (see ``UnderlineItemView/AppearanceConfig``), not by layout.
         ///
         /// - Parameters:
         ///   - cursorCornerRadius: The corner radius of the blinking cursor.
         ///   - cursorHeightMultiplier: The cursor height as a fraction of the item height.
         ///   - cursorWidth: The width of the blinking cursor.
         ///   - cornerRadius: The corner radius applied to the item's bounds.
-        ///   - underlineHeight: A convenience parameter that is not stored. See ``UnderlineItemView/AppearanceConfig`` for underline height.
         ///   - contentLabelEdgeInsets: The insets applied around the character label.
         public init(
             cursorCornerRadius: CGFloat = 0.5,
             cursorHeightMultiplier: CGFloat = 0.7,
             cursorWidth: CGFloat = 1,
             cornerRadius: CGFloat = 0,
-            underlineHeight: CGFloat = 2,
             contentLabelEdgeInsets: UIEdgeInsets = UIEdgeInsets(top: 2, left: 2, bottom: 2, right: 2)
         ) {
             self.cursorCornerRadius = cursorCornerRadius

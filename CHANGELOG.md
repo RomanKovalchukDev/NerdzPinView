@@ -23,3 +23,7 @@ Nothing yet.
 
 * Corrected the README Swift version badge (it showed Swift 5.1 or 5.9, but the package requires Swift 6.0) and documented the Xcode 16 requirement.
 * Raised the package to Swift tools 6.0, which sets the minimum Xcode to 16 for consumers.
+
+### Removed
+
+* Removed the unused `underlineHeight` parameter from `UnderlineItemView.LayoutConfig.init`. The parameter was never stored and had no effect (underline height is controlled by `UnderlineItemView.AppearanceConfig` via `getUnderlineHeight(for:)`). Runtime behavior is unchanged. Call sites that passed `underlineHeight:` to the layout initializer must remove that argument and set the height on the appearance config instead.
