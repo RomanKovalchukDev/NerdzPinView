@@ -8,13 +8,14 @@ NerdzPinView provides styled, multi-cell code entry components for iOS. At its c
 
 For most apps the pre-styled wrappers are enough. ``DesignableBorderedPinInputView``, ``DesignableUnderlinedPinInputView``, and ``DesignableOneTimeCodeInputView`` bundle sensible defaults, and ``NerdzBorderedPinView`` and ``NerdzUnderlinePinView`` expose that behavior to SwiftUI through bindings for the text, the state, and the keyboard focus.
 
-To get started, read <doc:GettingStarted> for SwiftUI or <doc:UIKitUsage> for UIKit.
+To get started, read <doc:GettingStarted>, then <doc:SwiftUIUsage> for SwiftUI or <doc:UIKitUsage> for UIKit.
 
 ## Topics
 
 ### Essentials
 
 - <doc:GettingStarted>
+- <doc:SwiftUIUsage>
 - <doc:UIKitUsage>
 
 ### SwiftUI Views
