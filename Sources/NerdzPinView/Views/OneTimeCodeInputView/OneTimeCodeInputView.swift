@@ -7,27 +7,66 @@
 
 import UIKit
 
+/// A view that can act as one item cell of a ``OneTimeCodeInputView``.
+///
+/// Any conforming type is a `UIView` that also renders a one-time code character
+/// (``OneTimeCodeItemViewType``) and is both layout and appearance configurable.
 public typealias OneTimeCodeItemView = UIView & OneTimeCodeItemViewType & ItemViewLayoutConfigurable & ItemViewAppearanceConfigurable
 
+/// A generic one-time code input backed by a full `UITextInput` implementation.
+///
+/// Unlike ``PinCodeInputView``, this view integrates with the system text input
+/// machinery, so it supports the caret, text selection ranges, and one-time code
+/// autofill. It manages one item view of type `T` per character and can group
+/// the items into two halves. It reports edits through ``onPinValueChanged`` and
+/// completion through ``onPinViewEnteredFully``. Use
+/// ``DesignableOneTimeCodeInputView`` for a ready to use configuration.
 @MainActor
 public class OneTimeCodeInputView<T: OneTimeCodeItemView>: UIView, UITextInput, @preconcurrency UIEditMenuInteractionDelegate {
-    
+
     // MARK: - Internal types
-    
+
+    /// The overall state of the one-time code input.
     public enum ViewState {
+        /// The input cannot receive text.
         case disabled
+
+        /// The input is idle and accepts text.
         case normal
+
+        /// The input is presenting an error and highlights every item accordingly.
         case error
     }
-    
+
+    /// Behavior and layout options for a ``OneTimeCodeInputView``.
     public struct Config {
+        /// The number of characters the input accepts.
         public var pinLength: Int
+
+        /// The placeholder character shown in empty items, or `nil` for none.
         public var placeholderCharacter: Character?
+
+        /// The title of the paste action shown in the edit menu.
         public var pasteActionTitle: String
+
+        /// A Boolean value indicating whether the items are split into two visually separated groups.
         public var shouldGroupNumbers: Bool
+
+        /// The spacing between adjacent items.
         public var itemSpacing: CGFloat
+
+        /// The spacing between the two groups when grouping is enabled.
         public var groupSpacing: CGFloat
-        
+
+        /// Creates a one-time code input configuration.
+        ///
+        /// - Parameters:
+        ///   - pinLength: The number of characters the input accepts.
+        ///   - placeholderCharacter: The placeholder character shown in empty items, or `nil` for none.
+        ///   - pasteActionTitle: The title of the paste action shown in the edit menu.
+        ///   - shouldGroupNumbers: Whether the items are split into two visually separated groups.
+        ///   - itemSpacing: The spacing between adjacent items.
+        ///   - groupSpacing: The spacing between the two groups when grouping is enabled.
         public init(
             pinLength: Int = 6,
             placeholderCharacter: Character? = nil,
@@ -232,12 +271,19 @@ public class OneTimeCodeInputView<T: OneTimeCodeItemView>: UIView, UITextInput, 
     }
     
     // MARK: - Properties(public)
-    
+
+    /// A closure invoked whenever the entered value changes.
     public var onPinValueChanged: PinCodeTextAction?
+
+    /// A closure invoked once every item has been filled.
     public var onPinViewEnteredFully: PinCodeTextAction?
+
+    /// A closure invoked when the input becomes first responder.
     public var onBecomeFirstResponder: PinCodeEmptyAction?
+
+    /// A closure invoked when the input resigns first responder.
     public var onResignFirstResponder: PinCodeEmptyAction?
-    
+
     /// The one-time code value without formatting.
     public var value: String {
         get {
@@ -250,43 +296,56 @@ public class OneTimeCodeInputView<T: OneTimeCodeItemView>: UIView, UITextInput, 
         }
     }
     
+    /// The behavior and layout configuration. Assigning a new value rebuilds the item views.
     public var config: Config = Config() {
         didSet {
             configureView()
         }
     }
-    
+
+    /// The overall state of the input, propagated to every item view.
     public var viewState: ViewState = .normal {
         didSet {
             update()
         }
     }
-    
+
+    /// The layout configuration applied to every item view.
     public var layoutConfig: T.LayoutConfig = T.LayoutConfig.defaultValue {
         didSet {
             itemViews.forEach({ $0.layoutConfig = layoutConfig })
         }
     }
-    
+
+    /// The appearance configuration applied to every item view.
     public var appearanceConfig: T.AppearanceConfig = T.AppearanceConfig.defaultValue {
         didSet {
             itemViews.forEach({ $0.appearanceConfig = appearanceConfig })
         }
     }
-    
+
+    /// A Boolean value indicating whether the input can become first responder. `false` while disabled.
     public override var canBecomeFirstResponder: Bool {
         viewState != .disabled
     }
-        
+
     // MARK: - UIKeyInput
-    
+
+    /// A Boolean value indicating whether the input contains any characters.
     public var hasText: Bool {
         !value.isEmpty
     }
-    
+
+    /// The autocorrection behavior for the keyboard.
     public var autocorrectionType: UITextAutocorrectionType = .no
+
+    /// The keyboard type presented for input.
     public var keyboardType: UIKeyboardType = .numberPad
+
+    /// The title of the keyboard return key.
     public var returnKeyType: UIReturnKeyType = .done
+
+    /// The semantic meaning of the text, used for autofill. Defaults to one-time code.
     public var textContentType: UITextContentType! = .oneTimeCode
     
     // MARK: - Properties(private)
@@ -297,20 +356,32 @@ public class OneTimeCodeInputView<T: OneTimeCodeItemView>: UIView, UITextInput, 
     
     // MARK: - Life cycle
         
+    /// Creates the input programmatically with the given frame.
+    ///
+    /// - Parameter frame: The initial frame rectangle for the view.
     public override init(frame: CGRect) {
         super.init(frame: frame)
-        
+
         configureView()
     }
-    
+
+    /// Creates the input from data in the given unarchiver.
+    ///
+    /// - Parameter coder: The unarchiver providing the encoded view data.
     public required init?(coder: NSCoder) {
         super.init(coder: coder)
-        
+
         configureView()
     }
-    
+
     // MARK: - Methods(public)
-    
+
+    /// Reports whether the input can perform a given action, enabling paste only when the pasteboard has text.
+    ///
+    /// - Parameters:
+    ///   - action: The selector describing the action to evaluate.
+    ///   - sender: The object requesting the action.
+    /// - Returns: `true` if the action is supported in the current context.
     open override func canPerformAction(_ action: Selector, withSender sender: Any?) -> Bool {
         if action == #selector(paste(_:)) {
             return UIPasteboard.general.hasStrings
@@ -319,17 +390,23 @@ public class OneTimeCodeInputView<T: OneTimeCodeItemView>: UIView, UITextInput, 
             return super.canPerformAction(action, withSender: sender)
         }
     }
-    
+
+    /// Inserts the pasteboard string at the current caret position.
+    ///
+    /// - Parameter sender: The object requesting the paste.
     open override func paste(_ sender: Any?) {
         guard let string = UIPasteboard.general.string else {
             return
         }
-        
+
         insertText(string)
     }
-    
+
     // MARK: - UIKeyInput
-    
+
+    /// Inserts text at the current selection, clamping to the configured length.
+    ///
+    /// - Parameter text: The text to insert. Characters beyond the remaining capacity are dropped.
     open func insertText(_ text: String) {
         guard let range = selectedTextRange as? TextRange else {
             return
@@ -343,6 +420,7 @@ public class OneTimeCodeInputView<T: OneTimeCodeItemView>: UIView, UITextInput, 
         update()
     }
 
+    /// Deletes the character before the caret, or the current selection.
     open func deleteBackward() {
         guard let range = selectedTextRange as? TextRange else {
             return
@@ -367,6 +445,9 @@ public class OneTimeCodeInputView<T: OneTimeCodeItemView>: UIView, UITextInput, 
     
     // MARK: - UIResponder
     
+    /// Makes the input active, placing the caret at the end of the current value.
+    ///
+    /// - Returns: `true` if the input became first responder.
     @discardableResult
     open override func becomeFirstResponder() -> Bool {
         let result = super.becomeFirstResponder()
@@ -384,19 +465,27 @@ public class OneTimeCodeInputView<T: OneTimeCodeItemView>: UIView, UITextInput, 
         return result
     }
     
+    /// Deactivates the input and refreshes the item views.
+    ///
+    /// - Returns: `true` if the input resigned first responder.
     @discardableResult
     open override func resignFirstResponder() -> Bool {
         let result = super.resignFirstResponder()
-        
+
         if result {
             update()
-            
+
             onResignFirstResponder?()
         }
-        
+
         return result
     }
-    
+
+    /// Handles taps, showing the edit menu when already active or becoming first responder otherwise.
+    ///
+    /// - Parameters:
+    ///   - touches: The touches that ended.
+    ///   - event: The event the touches belong to.
     public override func touchesEnded(_ touches: Set<UITouch>, with event: UIEvent?) {
         super.touchesEnded(touches, with: event)
 
@@ -414,6 +503,13 @@ public class OneTimeCodeInputView<T: OneTimeCodeItemView>: UIView, UITextInput, 
         
     // MARK: - UIEditMenuInteractionDelegate
     
+    /// Provides the edit menu, offering a paste action when the pasteboard has text.
+    ///
+    /// - Parameters:
+    ///   - interaction: The edit menu interaction requesting the menu.
+    ///   - configuration: The configuration for the menu being presented.
+    ///   - suggestedActions: The system suggested menu elements.
+    /// - Returns: A menu containing the paste action, or `nil` when there is nothing to paste.
     open func editMenuInteraction(
         _ interaction: UIEditMenuInteraction,
         menuFor configuration: UIEditMenuConfiguration,
@@ -525,12 +621,16 @@ public class OneTimeCodeInputView<T: OneTimeCodeItemView>: UIView, UITextInput, 
     // MARK: - UITextInput
     
     // MARK: - Handling text input
-    
-    // Not used in this view
+
+    /// The delegate notified of text and selection changes. Not used by this view.
     public var inputDelegate: (any UITextInputDelegate)?
-    
+
     // MARK: - Replacing and returning text
-    
+
+    /// Returns the substring covered by a text range.
+    ///
+    /// - Parameter range: The range to read.
+    /// - Returns: The text in the range, or `nil` when the range is empty or invalid.
     public func text(in range: UITextRange) -> String? {
         guard let range = range as? TextRange else {
             return nil
@@ -538,18 +638,30 @@ public class OneTimeCodeInputView<T: OneTimeCodeItemView>: UIView, UITextInput, 
 
         return textStorage.text(in: range)
     }
-    
+
+    /// Replaces the text in a range. This view ignores direct replacements.
+    ///
+    /// - Parameters:
+    ///   - range: The range to replace.
+    ///   - text: The replacement text.
     public func replace(_ range: UITextRange, withText text: String) {
         // Do nothing
     }
-    
+
+    /// Reports whether a proposed text change is allowed, always `true` for this view.
+    ///
+    /// - Parameters:
+    ///   - range: The range that would change.
+    ///   - text: The replacement text.
+    /// - Returns: Always `true`.
     public func shouldChangeText(in range: UITextRange, replacementText text: String) -> Bool {
         // Assume that it should change characters always
         return true
     }
-    
+
     // MARK: - Working with marked and selected text
-    
+
+    /// The current selection, expressed as a range. A zero-length range represents the caret.
     public var selectedTextRange: UITextRange? = nil {
         willSet {
             inputDelegate?.selectionWillChange(self)
@@ -559,13 +671,13 @@ public class OneTimeCodeInputView<T: OneTimeCodeItemView>: UIView, UITextInput, 
             update()
         }
     }
-    
-    // Otp or pin codes not inlude mark text range
-    
+
+    /// The range of marked text. Marked text is unsupported, so this is always `nil`.
     public var markedTextRange: UITextRange? {
         return nil
     }
-    
+
+    /// The style for marked text. Marked text is unsupported, so this is always `nil`.
     public var markedTextStyle: [NSAttributedString.Key : Any]? {
         get {
             return nil
@@ -574,25 +686,39 @@ public class OneTimeCodeInputView<T: OneTimeCodeItemView>: UIView, UITextInput, 
             // We don't support marked text
         }
     }
-    
+
+    /// Sets marked text. Marked text is unsupported, so this does nothing.
+    ///
+    /// - Parameters:
+    ///   - markedText: The text to mark.
+    ///   - selectedRange: The selection within the marked text.
     public func setMarkedText(_ markedText: String?, selectedRange: NSRange) {
         // We don't support marked text
     }
-    
+
+    /// Removes any marked text. Marked text is unsupported, so this does nothing.
     public func unmarkText() {
         // We don't support marked text
     }
-    
+
     // MARK: - Computing text ranges and text positions
-    
+
+    /// The position at the start of the value.
     public var beginningOfDocument: UITextPosition {
         textStorage.start
     }
-    
+
+    /// The position at the end of the value.
     public var endOfDocument: UITextPosition {
         textStorage.end
     }
-    
+
+    /// Creates a range between two positions.
+    ///
+    /// - Parameters:
+    ///   - fromPosition: The start position.
+    ///   - toPosition: The end position.
+    /// - Returns: The range, or `nil` when either position is invalid.
     public func textRange(from fromPosition: UITextPosition, to toPosition: UITextPosition) -> UITextRange? {
         guard let fromPosition = fromPosition as? TextPosition, let toPosition = toPosition as? TextPosition else {
             return nil
@@ -600,7 +726,13 @@ public class OneTimeCodeInputView<T: OneTimeCodeItemView>: UIView, UITextInput, 
 
         return textStorage.makeRange(from: fromPosition, to: toPosition)
     }
-    
+
+    /// Returns the position a given offset away from another position.
+    ///
+    /// - Parameters:
+    ///   - position: The starting position.
+    ///   - offset: The signed number of characters to move.
+    /// - Returns: The resulting position, or `nil` when it falls out of bounds.
     public func position(from position: UITextPosition, offset: Int) -> UITextPosition? {
         guard let position = position as? TextPosition else {
             return nil
@@ -615,7 +747,14 @@ public class OneTimeCodeInputView<T: OneTimeCodeItemView>: UIView, UITextInput, 
 
         return TextPosition(newIndex)
     }
-    
+
+    /// Returns the position a given offset away from another position in a layout direction.
+    ///
+    /// - Parameters:
+    ///   - position: The starting position.
+    ///   - direction: The layout direction to move in.
+    ///   - offset: The number of characters to move.
+    /// - Returns: The resulting position, or `nil` when it falls out of bounds.
     public func position(
         from position: UITextPosition,
         in direction: UITextLayoutDirection,
@@ -640,7 +779,13 @@ public class OneTimeCodeInputView<T: OneTimeCodeItemView>: UIView, UITextInput, 
     }
     
     // MARK: - Evaluating text positions
-    
+
+    /// Compares two positions.
+    ///
+    /// - Parameters:
+    ///   - position: The first position.
+    ///   - other: The second position.
+    /// - Returns: The ordering of the two positions.
     public func compare(_ position: UITextPosition, to other: UITextPosition) -> ComparisonResult {
         guard let position = position as? TextPosition, let other = other as? TextPosition else {
             return .orderedSame
@@ -648,7 +793,13 @@ public class OneTimeCodeInputView<T: OneTimeCodeItemView>: UIView, UITextInput, 
 
         return position.compare(other)
     }
-    
+
+    /// Returns the character distance between two positions.
+    ///
+    /// - Parameters:
+    ///   - from: The starting position.
+    ///   - toPosition: The ending position.
+    /// - Returns: The signed number of characters between the positions.
     public func offset(from: UITextPosition, to toPosition: UITextPosition) -> Int {
         guard let from = from as? TextPosition, let toPosition = toPosition as? TextPosition else {
             return 0
@@ -656,9 +807,15 @@ public class OneTimeCodeInputView<T: OneTimeCodeItemView>: UIView, UITextInput, 
 
         return toPosition.index - from.index
     }
-    
+
     // MARK: - Deterninging layout and writing direction
-    
+
+    /// Returns the position farthest in a direction within a range.
+    ///
+    /// - Parameters:
+    ///   - range: The range to search within.
+    ///   - direction: The layout direction.
+    /// - Returns: The farthest position, or `nil` when the range is invalid.
     public func position(within range: UITextRange, farthestIn direction: UITextLayoutDirection) -> UITextPosition? {
         guard let range = range as? TextRange else {
             return nil
@@ -676,33 +833,54 @@ public class OneTimeCodeInputView<T: OneTimeCodeItemView>: UIView, UITextInput, 
         }
     }
     
+    /// Returns the range obtained by extending a position toward a direction.
+    ///
+    /// - Parameters:
+    ///   - position: The anchor position.
+    ///   - direction: The direction to extend toward.
+    /// - Returns: The extended range, or `nil` for vertical directions.
     public func characterRange(byExtending position: UITextPosition, in direction: UITextLayoutDirection) -> UITextRange? {
         switch direction {
         case .right:
             return self.textRange(from: position, to: endOfDocument)
-            
+
         case .left:
             return self.textRange(from: beginningOfDocument, to: position)
-            
+
         case .up, .down:
             return nil
-            
+
         @unknown default:
             return nil
         }
     }
-    
+
+    /// Returns the base writing direction, always left to right for code input.
+    ///
+    /// - Parameters:
+    ///   - position: The position to query.
+    ///   - direction: The storage direction to consider.
+    /// - Returns: Always `.leftToRight`.
     public func baseWritingDirection(for position: UITextPosition, in direction: UITextStorageDirection) -> NSWritingDirection {
         // OTP input should be left-to-right always.
         .leftToRight
     }
-    
+
+    /// Sets the base writing direction for a range. The direction is fixed, so this does nothing.
+    ///
+    /// - Parameters:
+    ///   - writingDirection: The requested writing direction.
+    ///   - range: The range to apply it to.
     public func setBaseWritingDirection(_ writingDirection: NSWritingDirection, for range: UITextRange) {
         // Do nothing
     }
-    
+
     // MARK: - Geometry and hit-testing
-    
+
+    /// Returns the rectangle enclosing the item views covered by a range.
+    ///
+    /// - Parameter range: The range to measure.
+    /// - Returns: The bounding rectangle, or `.zero` when the range is empty or invalid.
     public func firstRect(for range: UITextRange) -> CGRect {
         guard let range = range as? TextRange, !range.isEmpty else {
             return .zero
@@ -727,6 +905,10 @@ public class OneTimeCodeInputView<T: OneTimeCodeItemView>: UIView, UITextInput, 
         return firstRect.union(secondRect)
     }
     
+    /// Returns the caret rectangle for a position, in the input's coordinate space.
+    ///
+    /// - Parameter position: The position to locate the caret at.
+    /// - Returns: The caret rectangle, or `.zero` when the position is invalid.
     public func caretRect(for position: UITextPosition) -> CGRect {
         guard let position = position as? TextPosition else {
             return .zero
@@ -735,16 +917,30 @@ public class OneTimeCodeInputView<T: OneTimeCodeItemView>: UIView, UITextInput, 
         let digitView = itemViews[clampIndex(position.index)]
         return digitView.convert(digitView.caretRect, to: self)
     }
-    
+
+    /// Returns the selection rectangles for a range. Text selection is unsupported, so this is empty.
+    ///
+    /// - Parameter range: The range to measure.
+    /// - Returns: Always an empty array.
     public func selectionRects(for range: UITextRange) -> [UITextSelectionRect] {
         // No text-selection
         return []
     }
-    
+
+    /// Returns the position closest to a point anywhere in the input.
+    ///
+    /// - Parameter point: The point, in the input's coordinate space.
+    /// - Returns: The closest position, or `nil` when no item is hit.
     public func closestPosition(to point: CGPoint) -> UITextPosition? {
         return closestPosition(to: point, within: textStorage.extent)
     }
-    
+
+    /// Returns the position closest to a point within a range.
+    ///
+    /// - Parameters:
+    ///   - point: The point, in the input's coordinate space.
+    ///   - range: The range to restrict the result to.
+    /// - Returns: The closest position inside the range, or `nil` when no item is hit.
     public func closestPosition(to point: CGPoint, within range: UITextRange) -> UITextPosition? {
         guard let range = range as? TextRange, let digitView = hitTest(point, with: nil) as? T, let index = itemViews.firstIndex(of: digitView) else {
             return nil
@@ -752,7 +948,11 @@ public class OneTimeCodeInputView<T: OneTimeCodeItemView>: UIView, UITextInput, 
 
         return range.contains(index) ? TextPosition(index) : nil
     }
-    
+
+    /// Returns the single character range at a point.
+    ///
+    /// - Parameter point: The point, in the input's coordinate space.
+    /// - Returns: A one character range at the point, or `nil` when no item is hit.
     public func characterRange(at point: CGPoint) -> UITextRange? {
         guard let startPosition = closestPosition(to: point) as? TextPosition, let endPosition = position(from: startPosition, offset: 1) else {
             return nil
@@ -760,8 +960,9 @@ public class OneTimeCodeInputView<T: OneTimeCodeItemView>: UIView, UITextInput, 
 
         return self.textRange(from: startPosition, to: endPosition)
     }
-    
+
     // MARK: - Tokenizing input text
-    
+
+    /// The tokenizer used to segment the input text into words and other units.
     public lazy var tokenizer: any UITextInputTokenizer = UITextInputStringTokenizer(textInput: self)
 }

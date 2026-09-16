@@ -2,7 +2,7 @@
 
 NerdzPinView is a highly customisable library used for entering pin and one time codes.
 
-[![Swift 5.9](https://img.shields.io/badge/Swift-5.1-orange.svg?style=flat)](https://developer.apple.com/swift/)
+[![Swift 6.0](https://img.shields.io/badge/Swift-6.0-orange.svg?style=flat)](https://developer.apple.com/swift/)
 [![SPM Compatible](https://img.shields.io/badge/Swift%20Package%20Manager-8A2BE2)](https://www.swift.org/documentation/package-manager/)
 [![Platforms iOS](https://img.shields.io/badge/Platforms-iOS-lightgray.svg?style=flat)](http://www.apple.com/ios/)
 [![License MIT](https://img.shields.io/badge/License-MIT-lightgrey.svg?style=flat)](https://opensource.org/licenses/MIT)
@@ -10,6 +10,11 @@ NerdzPinView is a highly customisable library used for entering pin and one time
 ## Getting Started
 
 NerdzPinView library supports both UIKIt and SwiftUI frameworks. 
+
+## Requirements
+
+* iOS 16 or later
+* Swift 6.0 (Xcode 16 or later)
 
 ## Installation
 
@@ -113,11 +118,6 @@ For storyboards and xibs, use the prebuilt `DesignableBorderedPinInputView` or `
 For full control (for example to plug in a custom item view), use the generic `PinCodeInputView<T: PinCodeItemView>` directly. Implement `PinCodeItemViewType`, `ItemViewLayoutConfigurable`, and `ItemViewAppearanceConfigurable` on your custom item to participate in the same configuration pipeline.
 
 You can also browse the [UIKit demo project](https://github.com/RomanKovalchukDev/NerdzPinView/tree/main/Samples/NerdzPinUIKitSample).
-
-## Requirements
-
-- iOS 16.0 +
-- Xcode 16.0 +
 
 ## License
 
