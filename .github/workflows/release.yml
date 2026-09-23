@@ -9,9 +9,6 @@ concurrency:
   group: release-${{ github.ref }}
   cancel-in-progress: false
 
-env:
-  SCHEME: NerdzPinView
-
 jobs:
   release:
     name: Publish GitHub release
@@ -20,11 +17,13 @@ jobs:
       contents: write
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
 
       - name: Extract changelog section
         run: |
-          version="${GITHUB_REF_NAME#v}"
+          version="${GITHUB_REF_NAME}"
           awk -v v="$version" '
             $0 ~ "^## \\[" v "\\]" { found = 1; next }
             found && /^## \[/ { exit }
@@ -42,7 +41,7 @@ jobs:
 
   docs:
     name: Build and deploy DocC
-    runs-on: macos-latest
+    runs-on: macos-15
     permissions:
       pages: write
       id-token: write
@@ -51,16 +50,33 @@ jobs:
       url: ${{ steps.deploy.outputs.page_url }}
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
-      - name: Select Xcode
-        run: sudo xcode-select -switch /Applications/Xcode.app
+      - name: Show environment
+        run: |
+          xcodebuild -version
+          swift --version
+
+      - name: Locate the documentation catalog
+        id: catalog
+        run: |
+          catalog="$(find Sources -maxdepth 3 -name '*.docc' -print -quit)"
+          if [ -z "$catalog" ]; then
+            echo "No DocC catalog found, skipping documentation." >&2
+            echo "found=false" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          module="$(basename "$(dirname "$catalog")")"
+          echo "found=true" >> "$GITHUB_OUTPUT"
+          echo "path=$catalog" >> "$GITHUB_OUTPUT"
+          echo "module=$module" >> "$GITHUB_OUTPUT"
 
       - name: Build documentation
+        if: steps.catalog.outputs.found == 'true'
         run: |
           set -o pipefail
           xcodebuild docbuild \
-            -scheme "$SCHEME" \
+            -scheme "${GITHUB_REPOSITORY#*/}" \
             -destination 'generic/platform=iOS Simulator' \
             -derivedDataPath .build/docc \
             2>&1 | tee docbuild.log
@@ -70,6 +86,7 @@ jobs:
           fi
 
       - name: Transform for static hosting
+        if: steps.catalog.outputs.found == 'true'
         run: |
           archive="$(find .build/docc -name '*.doccarchive' -print -quit)"
           if [ -z "$archive" ]; then
@@ -81,10 +98,12 @@ jobs:
             --hosting-base-path "${GITHUB_REPOSITORY#*/}"
 
       - name: Upload artifact
-        uses: actions/upload-pages-artifact@v3
+        if: steps.catalog.outputs.found == 'true'
+        uses: actions/upload-pages-artifact@v5
         with:
           path: _site
 
       - name: Deploy to Pages
+        if: steps.catalog.outputs.found == 'true'
         id: deploy
-        uses: actions/deploy-pages@v4
+        uses: actions/deploy-pages@v5

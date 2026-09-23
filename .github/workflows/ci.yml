@@ -10,16 +10,12 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  build-and-test:
-    runs-on: macos-latest
+  test:
+    name: Build and test (iOS Simulator)
+    runs-on: macos-15
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Select Xcode
-        # Pin to the latest stable Xcode provided by the runner image so the
-        # Swift 6 toolchain is deterministic across runs.
-        run: sudo xcode-select -switch /Applications/Xcode.app
+        uses: actions/checkout@v7
 
       - name: Show environment
         run: |
@@ -27,21 +23,12 @@ jobs:
           swift --version
 
       - name: Build
-        # Build against a generic simulator destination. We do not pin a device
-        # name here (like "iPhone 16") because the exact simulators installed on
-        # GitHub macos-latest runners change over time, and a generic Simulator
-        # destination always resolves. A successful build in Swift 6 language
-        # mode (tools-version 6.0) is also the strict concurrency guard.
-        run: |
-          xcodebuild build \
-            -scheme NerdzPinView \
-            -destination 'generic/platform=iOS Simulator'
+        run: >
+          xcodebuild build
+          -scheme NerdzPinView
+          -destination 'generic/platform=iOS Simulator'
 
       - name: Select an available iPhone simulator
-        # Tests need a concrete device, so we derive one at runtime instead of
-        # hardcoding a name. We list available devices as JSON and pick the first
-        # available iPhone, exposing its UDID for the test step. This survives
-        # runner image changes (any iPhone the image ships with will be used).
         id: sim
         run: |
           UDID=$(xcrun simctl list devices available --json | python3 -c "import json,sys; d=json.load(sys.stdin)['devices']; ids=[x['udid'] for r in d for x in d[r] if x.get('isAvailable') and x.get('name','').startswith('iPhone')]; print(ids[0] if ids else '')")
@@ -49,12 +36,11 @@ jobs:
             echo "No available iPhone simulator found." >&2
             exit 1
           fi
-          echo "Using simulator UDID: $UDID"
           echo "udid=$UDID" >> "$GITHUB_OUTPUT"
 
       - name: Test
-        run: |
-          xcodebuild test \
-            -scheme NerdzPinView \
-            -destination "platform=iOS Simulator,id=${{ steps.sim.outputs.udid }}" \
-            -enableCodeCoverage YES
+        run: >
+          xcodebuild test
+          -scheme NerdzPinView
+          -destination "platform=iOS Simulator,id=${{ steps.sim.outputs.udid }}"
+          -enableCodeCoverage YES
