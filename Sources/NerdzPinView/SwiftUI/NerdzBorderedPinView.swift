@@ -33,6 +33,9 @@ public struct NerdzBorderedPinView: UIViewRepresentable {
     /// A closure invoked once every item has been filled.
     public var onPinViewEnteredFully: PinCodeTextAction?
 
+    /// The accessibility label VoiceOver reports for the input, or `nil` for none.
+    public var accessibilityLabel: String?
+
     /// The autocapitalization style for the keyboard.
     public var autocapitalizationType: UITextAutocapitalizationType
 
@@ -80,6 +83,7 @@ public struct NerdzBorderedPinView: UIViewRepresentable {
     ///   - viewState: A binding to the overall input state.
     ///   - isFocused: A focus binding that drives first responder status.
     ///   - onPinViewEnteredFully: A closure invoked once every item has been filled.
+    ///   - accessibilityLabel: The accessibility label VoiceOver reports for the input, or `nil` for none.
     ///   - autocapitalizationType: The autocapitalization style for the keyboard.
     ///   - autocorrectionType: The autocorrection behavior for the keyboard.
     ///   - spellCheckingType: The spell checking behavior for the keyboard.
@@ -100,6 +104,7 @@ public struct NerdzBorderedPinView: UIViewRepresentable {
         viewState: Binding<ViewState>,
         isFocused: FocusState<Bool>.Binding,
         onPinViewEnteredFully: PinCodeTextAction? = nil,
+        accessibilityLabel: String? = nil,
         autocapitalizationType: UITextAutocapitalizationType = .none,
         autocorrectionType: UITextAutocorrectionType = .no,
         spellCheckingType: UITextSpellCheckingType = .no,
@@ -120,6 +125,7 @@ public struct NerdzBorderedPinView: UIViewRepresentable {
         self._viewState = viewState
         self._isFocused = isFocused
         self.onPinViewEnteredFully = onPinViewEnteredFully
+        self.accessibilityLabel = accessibilityLabel
         self.autocapitalizationType = autocapitalizationType
         self.autocorrectionType = autocorrectionType
         self.spellCheckingType = spellCheckingType
@@ -175,6 +181,9 @@ public struct NerdzBorderedPinView: UIViewRepresentable {
     
     private func updateKitView(view: DesignableBorderedPinInputView) {
         view.setText(text)
+        // `view` itself is a transparent wrapper (`isAccessibilityElement == false`);
+        // `pinView` is the actual accessibility element VoiceOver reports.
+        view.pinView.accessibilityLabel = accessibilityLabel
         view.viewState = viewState
         view.config = config
         view.layoutConfig = itemsLayoutConfig

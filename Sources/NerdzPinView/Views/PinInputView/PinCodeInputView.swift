@@ -72,6 +72,11 @@ public class PinCodeInputView<T: PinCodeItemView>: UIView, UIKeyInput, @preconcu
         /// A Boolean value indicating whether the input resigns first responder when the return key is pressed.
         public var shouldResignFirstResponderOnReturn: Bool
 
+        /// A Boolean value indicating whether this instance offers its own built-in paste menu and
+        /// long press gesture. Set to `false` when a host coordinates pasting across several linked
+        /// instances itself and needs to suppress the per-instance default.
+        public var isPasteGestureEnabled: Bool
+
         /// Creates a pin input configuration.
         ///
         /// - Parameters:
@@ -86,6 +91,7 @@ public class PinCodeInputView<T: PinCodeItemView>: UIView, UIKeyInput, @preconcu
         ///   - shouldMoveToPreviousOnDelete: Whether deleting moves the active item back to the previous cell.
         ///   - shouldResignFirstResponderOnEnd: Whether the input resigns first responder once fully entered.
         ///   - shouldResignFirstResponderOnReturn: Whether the input resigns first responder when the return key is pressed.
+        ///   - isPasteGestureEnabled: Whether this instance offers its own built-in paste menu and long press gesture.
         public init(
             pinLength: Int = 5,
             placeholderCharacter: Character? = nil,
@@ -97,7 +103,8 @@ public class PinCodeInputView<T: PinCodeItemView>: UIView, UIKeyInput, @preconcu
             containerSpacing: CGFloat = 10,
             shouldMoveToPreviousOnDelete: Bool = true,
             shouldResignFirstResponderOnEnd: Bool = true,
-            shouldResignFirstResponderOnReturn: Bool = false
+            shouldResignFirstResponderOnReturn: Bool = false,
+            isPasteGestureEnabled: Bool = true
         ) {
             self.pinLength = pinLength
             self.placeholderCharacter = placeholderCharacter
@@ -110,6 +117,7 @@ public class PinCodeInputView<T: PinCodeItemView>: UIView, UIKeyInput, @preconcu
             self.shouldMoveToPreviousOnDelete = shouldMoveToPreviousOnDelete
             self.shouldResignFirstResponderOnEnd = shouldResignFirstResponderOnEnd
             self.shouldResignFirstResponderOnReturn = shouldResignFirstResponderOnReturn
+            self.isPasteGestureEnabled = isPasteGestureEnabled
         }
     }
     
@@ -167,6 +175,19 @@ public class PinCodeInputView<T: PinCodeItemView>: UIView, UIKeyInput, @preconcu
     /// A Boolean value indicating whether the input can become first responder. `false` while disabled.
     public override var canBecomeFirstResponder: Bool {
         viewState != .disabled
+    }
+
+    // MARK: - Accessibility
+
+    /// The accessibility value VoiceOver reports, mirroring ``text``.
+    public override var accessibilityValue: String? {
+        get { text }
+        set {}
+    }
+
+    /// Opens the keyboard on VoiceOver double tap.
+    public override func accessibilityActivate() -> Bool {
+        becomeFirstResponder()
     }
 
     // MARK: - UIKeyInput
@@ -278,7 +299,7 @@ public class PinCodeInputView<T: PinCodeItemView>: UIView, UIKeyInput, @preconcu
     /// - Returns: `true` if the action is supported in the current context.
     open override func canPerformAction(_ action: Selector, withSender sender: Any?) -> Bool {
         if action == #selector(paste(_:)) {
-            return UIPasteboard.general.hasStrings
+            return config.isPasteGestureEnabled && UIPasteboard.general.hasStrings
         }
         else {
             return super.canPerformAction(action, withSender: sender)
@@ -442,7 +463,7 @@ public class PinCodeInputView<T: PinCodeItemView>: UIView, UIKeyInput, @preconcu
         menuFor configuration: UIEditMenuConfiguration,
         suggestedActions: [UIMenuElement]
     ) -> UIMenu? {
-        guard UIPasteboard.general.hasStrings else {
+        guard config.isPasteGestureEnabled, UIPasteboard.general.hasStrings else {
             return nil
         }
         
@@ -485,6 +506,8 @@ public class PinCodeInputView<T: PinCodeItemView>: UIView, UIKeyInput, @preconcu
         // addGestureRecognizer on every config change would otherwise stack up
         // duplicate interactions and recognizers.
         if !hasConfiguredHierarchy {
+            isAccessibilityElement = true
+
             addSubview(containerStackView)
 
             containerStackView.axis = .horizontal
@@ -511,6 +534,7 @@ public class PinCodeInputView<T: PinCodeItemView>: UIView, UIKeyInput, @preconcu
         // each item wider than the stack is tall and break the 1:1 constraint.
         containerStackView.distribution = .equalSpacing
         longPressGestureRecognizer.minimumPressDuration = config.pasteGestureMinDuration
+        longPressGestureRecognizer.isEnabled = config.isPasteGestureEnabled
 
         // Drop the previously installed horizontal anchors so that switching
         // between centered / non-centered modes does not leave both sets active.
@@ -542,6 +566,11 @@ public class PinCodeInputView<T: PinCodeItemView>: UIView, UIKeyInput, @preconcu
 
         for index in 0..<config.pinLength {
             let view = T()
+
+            // The container itself is the single accessibility element (see
+            // `accessibilityValue`/`accessibilityActivate()`); individual character
+            // cells are a layout detail VoiceOver should skip over.
+            view.isAccessibilityElement = false
 
             view.onViewTapped = { [weak self] in
                 guard let self else {
