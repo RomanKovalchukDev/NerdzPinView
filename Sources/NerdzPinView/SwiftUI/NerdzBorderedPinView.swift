@@ -12,7 +12,7 @@ import SwiftUI
 ///
 /// It bridges the UIKit input into SwiftUI through `UIViewRepresentable`, binding
 /// the entered ``text``, the ``viewState``, and the keyboard focus. Styling is
-/// supplied through the item and view configuration parameters of ``init(text:viewState:isFocused:onPinViewEnteredFully:autocapitalizationType:autocorrectionType:spellCheckingType:smartQuotesType:smartDashesType:smartInsertDeleteType:keyboardType:keyboardAppearance:returnKeyType:enablesReturnKeyAutomatically:isSecureTextEntry:textContentType:config:itemsLayoutConfig:itemsAppearanceConfig:)``.
+/// supplied through the item and view configuration parameters of ``init(text:viewState:isFocused:onPinViewEnteredFully:onDeleteAtStart:accessibilityLabel:autocapitalizationType:autocorrectionType:spellCheckingType:smartQuotesType:smartDashesType:smartInsertDeleteType:keyboardType:keyboardAppearance:returnKeyType:enablesReturnKeyAutomatically:isSecureTextEntry:textContentType:config:itemsLayoutConfig:itemsAppearanceConfig:)``.
 public struct NerdzBorderedPinView: UIViewRepresentable {
 
     /// The overall state of the underlying pin input.

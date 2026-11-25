@@ -11,6 +11,14 @@ This changelog starts its history at version 3.2.0. Earlier history is available
 
 Nothing yet.
 
+## [3.3.2] 2026-11-26
+
+### Added
+
+* `PinCodeInputView` accessibility support: the input is a single accessibility element reporting its current value through `accessibilityValue`, opens the keyboard on VoiceOver activation, and hides its per-character item views from the accessibility tree. `NerdzBorderedPinView` forwards a caller supplied `accessibilityLabel`.
+* `PinViewConfig.isPasteGestureEnabled` lets a consumer suppress one instance's built-in paste menu and long press gesture, for hosts that link several instances together and want to own a single combined paste action.
+* `PinCodeInputView.onDeleteAtStart` (and `NerdzBorderedPinView.onDeleteAtStart`) fires when backspace is pressed on the first item while it is already empty, so a host linking several instances together can move focus to the previous one.
+
 ## [3.2.0] 2026-09-16
 
 ### Added
