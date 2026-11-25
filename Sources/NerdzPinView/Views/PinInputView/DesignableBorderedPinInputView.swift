@@ -80,6 +80,17 @@ open class DesignableBorderedPinInputView: UIView {
         }
     }
 
+    /// A closure invoked when backspace is pressed on the first item while it is already empty.
+    public var onDeleteAtStart: PinCodeEmptyAction? {
+        get {
+            pinView.onDeleteAtStart
+        }
+
+        set {
+            pinView.onDeleteAtStart = newValue
+        }
+    }
+
     /// A closure invoked when the input becomes first responder.
     public var onBecomeFirstResponder: PinCodeEmptyAction? {
         get {

@@ -33,6 +33,10 @@ public struct NerdzBorderedPinView: UIViewRepresentable {
     /// A closure invoked once every item has been filled.
     public var onPinViewEnteredFully: PinCodeTextAction?
 
+    /// A closure invoked when backspace is pressed on the first item while it is already empty.
+    /// A host linking several instances together can use this to move focus to the previous one.
+    public var onDeleteAtStart: PinCodeEmptyAction?
+
     /// The accessibility label VoiceOver reports for the input, or `nil` for none.
     public var accessibilityLabel: String?
 
@@ -83,6 +87,7 @@ public struct NerdzBorderedPinView: UIViewRepresentable {
     ///   - viewState: A binding to the overall input state.
     ///   - isFocused: A focus binding that drives first responder status.
     ///   - onPinViewEnteredFully: A closure invoked once every item has been filled.
+    ///   - onDeleteAtStart: A closure invoked when backspace is pressed on the first item while it is already empty.
     ///   - accessibilityLabel: The accessibility label VoiceOver reports for the input, or `nil` for none.
     ///   - autocapitalizationType: The autocapitalization style for the keyboard.
     ///   - autocorrectionType: The autocorrection behavior for the keyboard.
@@ -104,6 +109,7 @@ public struct NerdzBorderedPinView: UIViewRepresentable {
         viewState: Binding<ViewState>,
         isFocused: FocusState<Bool>.Binding,
         onPinViewEnteredFully: PinCodeTextAction? = nil,
+        onDeleteAtStart: PinCodeEmptyAction? = nil,
         accessibilityLabel: String? = nil,
         autocapitalizationType: UITextAutocapitalizationType = .none,
         autocorrectionType: UITextAutocorrectionType = .no,
@@ -125,6 +131,7 @@ public struct NerdzBorderedPinView: UIViewRepresentable {
         self._viewState = viewState
         self._isFocused = isFocused
         self.onPinViewEnteredFully = onPinViewEnteredFully
+        self.onDeleteAtStart = onDeleteAtStart
         self.accessibilityLabel = accessibilityLabel
         self.autocapitalizationType = autocapitalizationType
         self.autocorrectionType = autocorrectionType
@@ -159,7 +166,11 @@ public struct NerdzBorderedPinView: UIViewRepresentable {
         view.onPinViewEnteredFully = { text in
             self.onPinViewEnteredFully?(text)
         }
-            
+
+        view.onDeleteAtStart = {
+            self.onDeleteAtStart?()
+        }
+
         return view
     }
     

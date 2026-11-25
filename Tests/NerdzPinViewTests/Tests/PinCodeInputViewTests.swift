@@ -112,6 +112,59 @@ struct PinCodeInputViewTests {
             #expect(longPressGesture?.isEnabled == true)
         }
     }
+
+    @MainActor
+    @Suite("Delete at start")
+    struct DeleteAtStartTests {
+
+        @Test
+        func testDeleteBackwardWhenFirstItemAlreadyEmptyShouldInvokeOnDeleteAtStart() {
+            // Arrange
+            let sut = TestData.makeSut()
+            var didInvoke = false
+            sut.onDeleteAtStart = { didInvoke = true }
+            sut.becomeFirstResponder()
+
+            // Act
+            sut.deleteBackward()
+
+            // Assert
+            #expect(didInvoke)
+        }
+
+        @Test
+        func testDeleteBackwardWhenMovingFromALaterEmptyItemShouldNotInvokeOnDeleteAtStart() {
+            // Arrange: item 0 holds "A", active item moved to the (empty) item 1
+            let sut = TestData.makeSut()
+            var didInvoke = false
+            sut.onDeleteAtStart = { didInvoke = true }
+            sut.becomeFirstResponder()
+            sut.insertText("A")
+
+            // Act: clears empty item 1, moving the active item back to item 0
+            sut.deleteBackward()
+
+            // Assert
+            #expect(!didInvoke)
+        }
+
+        @Test
+        func testDeleteBackwardWhenFirstItemHasValueShouldNotInvokeOnDeleteAtStart() {
+            // Arrange: item 0 holds "A"; one backspace already moved the active item back to it
+            let sut = TestData.makeSut()
+            var didInvoke = false
+            sut.onDeleteAtStart = { didInvoke = true }
+            sut.becomeFirstResponder()
+            sut.insertText("A")
+            sut.deleteBackward()
+
+            // Act: clears item 0's own value
+            sut.deleteBackward()
+
+            // Assert
+            #expect(!didInvoke)
+        }
+    }
 }
 
 @MainActor

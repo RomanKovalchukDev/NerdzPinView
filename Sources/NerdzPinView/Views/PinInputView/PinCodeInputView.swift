@@ -129,6 +129,11 @@ public class PinCodeInputView<T: PinCodeItemView>: UIView, UIKeyInput, @preconcu
     /// A closure invoked once every item has been filled.
     public var onPinViewEnteredFully: PinCodeTextAction?
 
+    /// A closure invoked when backspace is pressed on the first item while it is already empty.
+    /// The input itself does nothing in this case (there is nowhere left to move to); a host
+    /// linking several instances together can use this to move focus to the previous instance.
+    public var onDeleteAtStart: PinCodeEmptyAction?
+
     /// A closure invoked when the input becomes first responder.
     public var onBecomeFirstResponder: PinCodeEmptyAction?
 
@@ -396,19 +401,22 @@ public class PinCodeInputView<T: PinCodeItemView>: UIView, UIKeyInput, @preconcu
         }
         
         let oldValue = charactersArray[activeItemIndex]
-        
+
         charactersArray[activeItemIndex] = nil
         itemViews[activeItemIndex].setCharacter(nil, animated: false)
-        
+
         if config.shouldMoveToPreviousOnDelete || oldValue == nil {
             let nextItemIndex = activeItemIndex - 1
-            
+
             if nextItemIndex >= 0 {
                 self.activeItemIndex = nextItemIndex
                 self.updateSubviewStates()
             }
+            else if activeItemIndex == 0 && oldValue == nil {
+                onDeleteAtStart?()
+            }
         }
-        
+
         onPinValueChanged?(self.text)
     }
     
